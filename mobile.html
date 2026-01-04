@@ -980,7 +980,13 @@ const firebaseConfig = {
     storageBucket: "gochat-35172.appspot.com",
     appId: "1:206571646434:web:4036d43695a00474499dbb"
 };
-firebase.initializeApp(firebaseConfig);
+
+try {
+    firebase.initializeApp(firebaseConfig);
+} catch (e) {
+    console.error("Firebase Init Error:", e);
+}
+
 const db = firebase.database();
 const currentUser = localStorage.getItem("gochat_user");
 const SECRET_KEY = "Global_Key_123";
@@ -1053,8 +1059,10 @@ async function initApp() {
     db.ref("users/" + currentUser).on("value", s => {
         const d = s.val();
         if(d) {
-            document.getElementById("myName").innerText = d.username;
-            document.getElementById("myPhotos").src = d.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            const myNameEl = document.getElementById("myName");
+            if(myNameEl) myNameEl.innerText = d.username;
+            const myPhotoEl = document.getElementById("myPhotos");
+            if(myPhotoEl) myPhotoEl.src = d.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
             db.ref("users/" + currentUser).update({ online: true, lastSeen: Date.now() });
         }
     });
@@ -1065,21 +1073,28 @@ async function initApp() {
     loadContacts();
     setupEmoji(); 
     setupTypingListener();
+
+    // Safe: Setup enter key only after init
+    const textEl = document.getElementById("text");
+    if(textEl) {
+        textEl.onkeydown = e => { 
+            if(e.key === "Enter") send(); 
+        };
+    }
 }
 
 /* =========================================
-    2. SYSTEM EMOJI (REDUCED FOR SAFETY)
+    2. SYSTEM EMOJI (EMPTY FOR SAFETY)
     ========================================= */
-// Menggunakan daftar pendek untuk menghindari error copy-paste pada array panjang
 const emojiCategories = {
-    'Smileys': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','🥰','😘','😋','😛','😜','🧐','😎','🥳','😏','😒'],
-    'People': ['👶','👧','👨','👩','👱','👴','👵','🧕','🤶','🤵','🤰','👱','👲','🤱','🤴','🤷','🤸','🤹','🧔'],
-    'Nature': ['🐶','🐺','🐸','🐙','🦑','🐙','🦓','🦞','🦞','🦟','🦦','🦢','🦥','🦧','🦘','🦖'],
-    'Food': ['🍏','🍎','🍐','🍑','🍒','🍓','🥝','🍍','🥑','🥒','🥓','🥔','🥕','🥖','🥗'],
-    'Activity': ['⚽','🔋','🔌','🔧','🔩','🔨','🚪','🚫','🚬','💣','🔫','💥','🔭','🕯','🏸','🎽'],
-    'Objects': ['⌚','⏳','⏸','⏺','⏏','⏐','🔑','🔒','🔓','🔏','🔐','🔔','🔕','🔖','📌','📎','📏'],
-    'Symbols': ['💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','💔','💕','💞','💟','💠','💘','❤️','❤️','💌'],
-    'Flags': ['🏳','🏴','🏵','🏶','🏷','🏸','🏹','🏺','🏻','🏼','🏽','🏾','🏿'] 
+    'Smileys': [],
+    'People': [],
+    'Nature': [],
+    'Food': [],
+    'Activity': [],
+    'Objects': [],
+    'Symbols': [],
+    'Flags': [] 
 };
 
 const emojiIcons = {
@@ -1095,13 +1110,14 @@ const emojiIcons = {
 
 function setupEmoji() {
     const tabsContainer = document.getElementById('emojiTabsContainer');
+    if(!tabsContainer) return;
     const categories = Object.keys(emojiCategories);
     tabsContainer.innerHTML = "";
     
     categories.forEach(cat => {
         const btn = document.createElement("div");
         btn.className = `emoji-tab ${currentEmojiCategory === cat ? 'active' : ''}`;
-        btn.innerHTML = emojiIcons[cat] || cat.substring(0, 1);
+        btn.innerText = emojiIcons[cat] || cat.substring(0, 1);
         btn.onclick = () => renderEmojiGrid(cat);
         tabsContainer.appendChild(btn);
     });
@@ -1109,19 +1125,26 @@ function setupEmoji() {
 
 function renderEmojiGrid(category) {
     currentEmojiCategory = category;
-    
     document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
     const tabs = document.querySelectorAll('.emoji-tab');
-    tabs.forEach(t => { if(t.innerText === emojiIcons[category]) t.classList.add('active'); });
+    tabs.forEach(t => { 
+        if(t.innerText === emojiIcons[category]) t.classList.add('active'); 
+    });
 
     const grid = document.getElementById("emojiGridContainer");
+    if(!grid) return;
     grid.innerHTML = "";
     
+    // Render empty placeholder if array is empty
+    if (emojiCategories[category].length === 0) {
+        grid.innerHTML = "<div style='grid-column:1/-1; text-align:center; color:#666; padding:20px;'>Emoji Empty</div>";
+        return;
+    }
+
     emojiCategories[category].forEach(emojiChar => {
         const el = document.createElement("div");
         el.className = "emoji-item";
         el.innerText = emojiChar;
-        
         el.onclick = (e) => {
             e.stopPropagation(); 
             textInput.value += emojiChar;
@@ -1135,10 +1158,14 @@ function renderEmojiGrid(category) {
     CONTACTS & LIST
     ========================================= */
 function loadContacts() {
-    if (contactsListener) { db.ref(`user_chats/${currentUser}`).off('value', contactsListener); }
+    if (contactsListener) { 
+        try { db.ref(`user_chats/${currentUser}`).off('value', contactsListener); } 
+        catch(e){}
+    }
     
     contactsListener = db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
         const list = document.getElementById("users");
+        if(!list) return;
         list.innerHTML = ""; 
         
         let items = [];
@@ -1158,10 +1185,16 @@ function loadContacts() {
                 const u = uSnap.val();
                 if(u) globalContacts[item.id] = u;
 
-                let div = document.createElement("div");
+                const div = document.createElement("div");
                 div.id = `contact-${item.id}`; 
                 div.className = `user`;
-                div.onclick = (e) => { if (e.target.tagName !== 'IMG') openChat(item.id, u?.photo || '', u?.name || u?.username || item.id, isGrp); };
+                
+                // Safe onclick binding
+                div.onclick = (e) => { 
+                    if (e.target.tagName !== 'IMG') {
+                        openChat(item.id, u?.photo || '', u?.name || u?.username || item.id, isGrp); 
+                    }
+                };
                 
                 div.innerHTML = `
                     <img src="${u?.photo || (isGrp ? 'https://cdn-icons-png.flaticon.com/512/615/615075.png' : 'https://cdn-icons-png.flaticon.com/512/149/149071.png')}" 
@@ -1199,14 +1232,17 @@ function openChat(pId, photo, name, grp = false) {
     document.getElementById("msgs").style.display = "flex";
     document.getElementById("inputArea").style.display = "block";
 
-    document.getElementById("chatName").innerText = name;
-    document.getElementById("chatAvatar").src = photo || (grp ? "https://cdn-icons-png.flaticon.com/512/615/615075.png" : "https://cdn-icons-png.flaticon.com/512/149/149071.png");
+    const chatNameEl = document.getElementById("chatName");
+    if(chatNameEl) chatNameEl.innerText = name;
+    const chatAvatarEl = document.getElementById("chatAvatar");
+    if(chatAvatarEl) chatAvatarEl.src = photo || (grp ? "https://cdn-icons-png.flaticon.com/512/615/615075.png" : "https://cdn-icons-png.flaticon.com/512/149/149071.png");
 
     const msgsDiv = document.getElementById("msgs");
     msgsDiv.innerHTML = "";
 
     activeChatRef.on("child_added", snap => {
         renderMessage(snap.val(), snap.key);
+        msgsDiv.scrollTop = msgsDiv.scrollHeight;
         if(snap.val().from !== currentUser && !snap.val().seen) { db.ref("chats/" + currentChatId + "/" + snap.key).update({ seen: true }); }
     });
 
@@ -1222,7 +1258,15 @@ function openChat(pId, photo, name, grp = false) {
 
     db.ref(`typing/${currentChatId}`).off();
     watchTyping(currentChatId);
-    if(!grp) { updatePartnerOnlineStatus(); } else { document.getElementById("chatStatus").innerText = "Grup Chat"; document.getElementById("chatStatus").style.color = "var(--text-muted)"; isEditing = false; cancelReply(); }
+    if(!grp) { updatePartnerOnlineStatus(); } else { 
+        const chatStatusEl = document.getElementById("chatStatus");
+        if(chatStatusEl) {
+            chatStatusEl.innerText = "Grup Chat"; 
+            chatStatusEl.style.color = "var(--text-muted)"; 
+        }
+        isEditing = false; 
+        cancelReply(); 
+    }
 }
 
 function renderMessage(m, key) {
@@ -1238,16 +1282,26 @@ function renderMessage(m, key) {
     let touchStartX, touchStartY, touchTimer;
     wrap.oncontextmenu = (e) => { e.preventDefault(); openContextMenu(e, key, m); };
     wrap.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0]; touchStartX = touch.clientX; touchStartY = touch.clientY;
+        const touch = e.touches[0]; 
+        touchStartX = touch.clientX; 
+        touchStartY = touch.clientY;
         if (touchTimer) clearTimeout(touchTimer);
-        touchTimer = setTimeout(() => { openContextMenu({ clientX: touchStartX, clientY: touchStartY, preventDefault: () => {} }, key, m); }, 600);
+        touchTimer = setTimeout(() => { 
+            openContextMenu({ clientX: touchStartX, clientY: touchStartY, preventDefault: () => {} }, key, m); 
+        }, 600);
     }, { passive: false });
     wrap.addEventListener('touchmove', (e) => {
         if (!touchTimer) return;
         const touch = e.touches[0];
-        if (Math.abs(touch.clientX - touchStartX) > 10 || Math.abs(touch.clientY - touchStartY) > 10) { clearTimeout(touchTimer); touchTimer = null; }
+        if (Math.abs(touch.clientX - touchStartX) > 10 || Math.abs(touch.clientY - touchStartY) > 10) { 
+            clearTimeout(touchTimer); 
+            touchTimer = null; 
+        }
     }, { passive: false });
-    wrap.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
+    wrap.addEventListener('touchend', () => { 
+        clearTimeout(touchTimer); 
+        touchTimer = null; 
+    });
 
     let content = "";
     if (m.deleted) {
@@ -1259,9 +1313,19 @@ function renderMessage(m, key) {
                 let url = "";
                 try { url = decryptData(m.text.replace("IMG:", "")); } catch(e) { url = null; }
                 if (m.viewOnce) {
-                    textBody = `<div class="view-once-blur" onclick="openViewOnceMessage('${key}')"><img src="${url}" style="width:100%; display:block; filter:blur(25px);"><div class="view-once-overlay"><i class="fas fa-eye" style="font-size:30px;"></i><div style="font-size:12px;">Klik untuk melihat</div></div></div>`;
+                    // Safe onclick binding
+                    const blurDiv = document.createElement('div');
+                    blurDiv.className = 'view-once-blur';
+                    blurDiv.innerHTML = `<img src="${url}" style="width:100%; display:block; filter:blur(25px);"><div class="view-once-overlay"><i class="fas fa-eye" style="font-size:30px;"></i><div style="font-size:12px;">Klik untuk melihat</div></div>`;
+                    blurDiv.onclick = () => openViewOnceMessage(key);
+                    textBody = blurDiv.outerHTML;
                 } else {
-                    textBody = `<img src="${url}" onclick="openLightbox('${url}')" style="max-width:100%; border-radius:10px; cursor:pointer;">`;
+                    const imgTag = `<img src="${url}" style="max-width:100%; border-radius:10px; cursor:pointer;">`;
+                    // Safe onclick
+                    const wrapImg = document.createElement('div');
+                    wrapImg.innerHTML = imgTag;
+                    wrapImg.querySelector('img').onclick = () => openLightbox(url);
+                    textBody = wrapImg.innerHTML;
                 }
             } 
             else if (m.text.startsWith("TYPE:VN:")) {
@@ -1270,7 +1334,12 @@ function renderMessage(m, key) {
             } 
             else if (m.text.startsWith("CALL_JITSI:")) {
                 const p = m.text.split(":");
-                textBody = `<div class="call-msg" onclick="joinVideoCall('${p[2]}', '${p[1]}')"><i class="fas fa-video"></i><br><small>Panggilan Masuk (Klik Gabung)</small></div>`;
+                // Safe onclick
+                const callDiv = document.createElement('div');
+                callDiv.className = 'call-msg';
+                callDiv.innerHTML = `<i class="fas fa-video"></i><br><small>Panggilan Masuk (Klik Gabung)</small>`;
+                callDiv.onclick = () => joinVideoCall(p[2], p[1]);
+                textBody = callDiv.outerHTML;
             }
             else {
                 textBody = `<span>${decryptData(m.text)}</span>`;
@@ -1298,6 +1367,9 @@ function renderMessage(m, key) {
     }
 }
 
+/* =========================================
+    TYPING STATUS
+    ========================================= */
 function watchTyping(chatId) {
     db.ref(`typing/${chatId}`).on("value", snap => {
         const data = snap.val();
@@ -1395,13 +1467,14 @@ function playNotificationSound(type = 'message') {
 
 function hideAppToast() {
     const container = document.getElementById("custom-toast-container");
-    container.style.top = "-200px";
+    if(container) container.style.top = "-200px";
 }
 
 function showAppToast(title, body, photo, chatId) {
     const container = document.getElementById("custom-toast-container");
     const card = document.createElement("div");
     card.id = "custom-toast-card";
+    // Safe onclick
     card.onclick = () => {
         const isGrp = chatId.startsWith("GROUP_");
         openChat(chatId, photo || '', title, isGrp);
@@ -1513,9 +1586,11 @@ function handleReply() {
     if (!selectedMsgData) return;
     replyData = { id: selectedMsgId, user: selectedMsgData.from, text: selectedMsgData.text };
     document.getElementById("reply-preview").style.display = "block";
-    document.getElementById("reply-user").innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
-    document.getElementById("reply-text").innerText = decryptData(replyData.text);
-    document.getElementById("text").focus();
+    const replyUser = document.getElementById("reply-user");
+    if(replyUser) replyUser.innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
+    const replyText = document.getElementById("reply-text");
+    if(replyText) replyText.innerText = decryptData(replyData.text);
+    textInput.focus();
 }
 function scrollToMessage(msgId) {
     const targetEl = document.getElementById("msg-wrap-" + msgId);
@@ -1528,8 +1603,8 @@ function scrollToMessage(msgId) {
 function cancelReply() { replyData = null; document.getElementById("reply-preview").style.display = "none"; }
 function handleEdit() {
     isEditing = true;
-    document.getElementById("text").value = decryptData(selectedMsgData.text);
-    document.getElementById("text").focus();
+    textInput.value = decryptData(selectedMsgData.text);
+    textInput.focus();
     showToast("Mode Edit Aktif");
 }
 function handleDelete() {
@@ -1565,6 +1640,9 @@ function handleCopy() {
     showToast("Disalin!");
 }
 
+/* =========================================
+    FORWARDING LOGIC
+    ========================================= */
 function handleForward() {
     document.getElementById("msgMenu").style.display = "none";
     const targetId = prompt("Masukkan User ID tujuan:");
@@ -1665,11 +1743,15 @@ function toggleRecordingUI(isRecording) {
 }
 
 function startTimer() {
-    let sec = 0, min = 0; const timerDisplay = document.getElementById('record-timer');
+    let sec = 0; 
+    let min = 0; 
+    const timerDisplay = document.getElementById('record-timer');
     if (!timerDisplay) return;
     if (recordInterval) clearInterval(recordInterval);
     recordInterval = setInterval(() => {
-        sec++; if (sec == 60) { min++; sec = 0; } timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
+        sec++;
+        if (sec == 60) { min++; sec = 0; }
+        timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
     }, 1000);
 }
 
@@ -1694,7 +1776,11 @@ function handleMove(e) {
 }
 
 function handleStop() {
-    if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); } else { toggleRecordingUI(false); }
+    if (mediaRecorder && mediaRecorder.state === "recording") { 
+        mediaRecorder.stop(); 
+    } else { 
+        toggleRecordingUI(false); 
+    }
 }
 
 if(micBtn) {
@@ -1703,7 +1789,11 @@ if(micBtn) {
     micBtn.addEventListener('touchmove', handleMove, {passive: false});
     micBtn.addEventListener('touchend', handleStop);
 }
-window.addEventListener('mouseup', () => { if (mediaRecorder && mediaRecorder.state === "recording") handleStop(); });
+window.addEventListener('mouseup', () => { 
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        handleStop(); 
+    }
+});
 
 /* =========================================
     TOGGLE EMOJI PANEL
@@ -1724,14 +1814,21 @@ const emojiButton = document.getElementById("emojiButton");
 if(emojiButton && emojiPanel) {
     emojiButton.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (emojiPanel.style.display === 'flex') { emojiPanel.style.display = 'none'; } 
-        else { emojiPanel.style.display = 'flex'; renderEmojiTabs('Smileys'); renderEmojiGrid('Smileys'); }
+        if (emojiPanel.style.display === 'flex') { 
+            emojiPanel.style.display = 'none'; 
+        } else { 
+            emojiPanel.style.display = 'flex'; 
+            renderEmojiTabs('Smileys'); 
+            renderEmojiGrid('Smileys'); 
+        }
     });
 }
 
 document.addEventListener('click', (e) => {
     if (e.target.id !== 'emojiButton' && !e.target.closest('#emojiPanel')) {
-        if (emojiPanel.style.display === 'flex') emojiPanel.style.display = 'none';
+        if (emojiPanel.style.display === 'flex') {
+            emojiPanel.style.display = 'none';
+        }
     }
 });
 
@@ -1748,14 +1845,20 @@ function renderEmojiTabs(activeCat) {
     });
 }
 
+/* =========================================
+    TYPING LISTENER
+    ========================================= */
 function setupTypingListener() {
     const input = document.getElementById("text");
+    if(!input) return;
     input.addEventListener("input", () => {
         if(!currentChatId) return;
         const myDisplayName = document.getElementById("myName").innerText;
         db.ref(`typing/${currentChatId}/${currentUser}`).set(myDisplayName);
         clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => db.ref(`typing/${currentChatId}/${currentUser}`).remove(), 2000);
+        typingTimeout = setTimeout(() => {
+            db.ref(`typing/${currentChatId}/${currentUser}`).remove();
+        }, 2000);
     });
 }
 
@@ -1763,7 +1866,9 @@ function updateSummary(msg) {
     const s = { lastMsg: msg.length > 30 ? msg.substring(0,30) + "..." : msg, time: Date.now() };
     if (isGroup) {
         db.ref("group_members/" + currentPartnerId).once("value", snap => {
-            snap.forEach(m => db.ref(`user_chats/${m.key}/${currentPartnerId}`).update(s));
+            snap.forEach(m => {
+                db.ref(`user_chats/${m.key}/${currentPartnerId}`).update(s);
+            });
         });
     } else {
         db.ref(`user_chats/${currentUser}/${currentPartnerId}`).update(s);
@@ -1785,8 +1890,13 @@ function updatePartnerOnlineStatus() {
 /* =========================================
     MODAL FUNCTIONS
     ========================================= */
-function openAddFriend() { document.getElementById("addFriendModal").style.display = "flex"; document.getElementById("friendInput").value = ""; }
-function closeAddFriend() { document.getElementById("addFriendModal").style.display = "none"; }
+function openAddFriend() { 
+    document.getElementById("addFriendModal").style.display = "flex"; 
+    document.getElementById("friendInput").value = ""; 
+}
+function closeAddFriend() { 
+    document.getElementById("addFriendModal").style.display = "none"; 
+}
 function processAddFriend() {
     const id = document.getElementById("friendInput").value.trim();
     if(!id) return showToast("ID Teman tidak boleh kosong!");
@@ -1795,14 +1905,22 @@ function processAddFriend() {
         if(s.exists()) {
             db.ref(`user_chats/${currentUser}/${id}`).update({ lastMsg: "Kontak baru", time: Date.now() });
             db.ref(`user_chats/${id}/${currentUser}`).update({ lastMsg: "Permintaan baru", time: Date.now() }).then(() => {
-                showToast("Berhasil menambahkan teman!"); closeAddFriend();
+                showToast("Berhasil menambahkan teman!"); 
+                closeAddFriend();
             });
-        } else { alert("ID User '" + id + "' tidak ditemukan!"); }
+        } else { 
+            alert("ID User '" + id + "' tidak ditemukan!"); 
+        }
     });
 }
 
-function openCreateGroup() { document.getElementById("createGroupModal").style.display = "flex"; document.getElementById("groupNameInput").value = ""; }
-function closeCreateGroup() { document.getElementById("createGroupModal").style.display = "none"; }
+function openCreateGroup() { 
+    document.getElementById("createGroupModal").style.display = "flex"; 
+    document.getElementById("groupNameInput").value = ""; 
+}
+function closeCreateGroup() { 
+    document.getElementById("createGroupModal").style.display = "none"; 
+}
 function processCreateGroup() {
     const name = document.getElementById("groupNameInput").value.trim();
     if(!name) return showToast("Nama grup tidak boleh kosong!");
@@ -1811,7 +1929,8 @@ function processCreateGroup() {
     db.ref("groups/" + groupId).set(groupData);
     db.ref(`group_members/${groupId}/${currentUser}`).set(true);
     db.ref(`user_chats/${currentUser}/${groupId}`).set({ lastMsg: "Grup baru dibuat", time: Date.now() }).then(() => {
-        showToast("Grup '" + name + "' berhasil dibuat!"); closeCreateGroup();
+        showToast("Grup '" + name + "' berhasil dibuat!"); 
+        closeCreateGroup();
     });
 }
 
@@ -1820,35 +1939,70 @@ function processCreateGroup() {
     ========================================= */
 function setupHoldListener(element, targetId) {
     let touchStartX, touchStartY, internalHoldTimer;
-    element.oncontextmenu = (e) => { e.preventDefault(); showChatMenu(e.clientX, e.clientY, targetId); };
+    element.oncontextmenu = (e) => { 
+        e.preventDefault(); 
+        showChatMenu(e.clientX, e.clientY, targetId); 
+    };
     element.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0]; touchStartX = touch.clientX; touchStartY = touch.clientY;
+        const touch = e.touches[0]; 
+        touchStartX = touch.clientX; 
+        touchStartY = touch.clientY;
         if (internalHoldTimer) clearTimeout(internalHoldTimer);
-        internalHoldTimer = setTimeout(() => { if (navigator.vibrate) navigator.vibrate(50); showChatMenu(touchStartX, touchStartY, targetId); }, 600);
+        internalHoldTimer = setTimeout(() => { 
+            if (navigator.vibrate) navigator.vibrate(50); 
+            showChatMenu(touchStartX, touchStartY, targetId); 
+        }, 600);
     }, { passive: true });
+    
     element.addEventListener('touchmove', (e) => {
         if (!internalHoldTimer) return;
         const touch = e.touches[0];
-        const moveX = Math.abs(touch.clientX - touchStartX); const moveY = Math.abs(touch.clientY - touchStartY);
-        if (moveX > 10 || moveY > 10) { clearTimeout(internalHoldTimer); internalHoldTimer = null; }
+        const moveX = Math.abs(touch.clientX - touchStartX);
+        const moveY = Math.abs(touch.clientY - touchStartY);
+        if (moveX > 10 || moveY > 10) { 
+            clearTimeout(internalHoldTimer); 
+            internalHoldTimer = null; 
+        }
     }, { passive: true });
-    element.addEventListener('touchend', () => { clearTimeout(internalHoldTimer); internalHoldTimer = null; });
+    
+    element.addEventListener('touchend', () => { 
+        clearTimeout(internalHoldTimer); 
+        internalHoldTimer = null; 
+    });
 }
 
 function showChatMenu(x, y, targetId) {
     let menu = document.getElementById("chat-context-menu");
     if (!menu) {
-        menu = document.createElement("div"); menu.id = "chat-context-menu";
-        menu.className = "context-menu"; document.body.appendChild(menu);
+        menu = document.createElement("div"); 
+        menu.id = "chat-context-menu";
+        menu.className = "context-menu"; 
+        document.body.appendChild(menu);
     }
     menu.style.display = "block";
-    menu.innerHTML = `<div onclick="deleteChat('${targetId}')" class="context-menu-item danger"><i class="fas fa-trash" style="width:20px; text-align:center;"></i> Hapus Chat</div>`;
-    let finalX = x; let finalY = y;
+    
+    // Safe binding instead of innerHTML with onclick
+    menu.innerHTML = ""; 
+    const div = document.createElement("div");
+    div.className = "context-menu-item danger";
+    div.innerHTML = '<i class="fas fa-trash" style="width:20px; text-align:center;"></i> Hapus Chat';
+    div.onclick = () => deleteChat(targetId);
+    menu.appendChild(div);
+
+    let finalX = x; 
+    let finalY = y;
     if (x > window.innerWidth - 180) finalX = window.innerWidth - 180 - 10;
     if (y > window.innerHeight - 120) finalY = window.innerHeight - 120 - 10;
-    menu.style.left = finalX + 'px'; menu.style.top = finalY + 'px';
-    const closeMenu = () => { menu.style.display = "none"; document.removeEventListener('click', closeMenu); };
-    setTimeout(() => document.addEventListener('click', closeMenu), 10);
+    menu.style.left = finalX + 'px'; 
+    menu.style.top = finalY + 'px';
+    
+    const closeMenu = () => { 
+        menu.style.display = "none"; 
+        document.removeEventListener('click', closeMenu); 
+    };
+    setTimeout(() => {
+        document.addEventListener('click', closeMenu);
+    }, 10);
 }
 
 function deleteChat(targetId) {
@@ -1862,13 +2016,26 @@ function deleteChat(targetId) {
             document.getElementById("welcome-screen").style.display = "flex";
             document.getElementById("sidebar").classList.remove("hidden");
         }
-        const list = document.getElementById("users"); if(list) list.innerHTML = ""; loadContacts();
+        const list = document.getElementById("users"); 
+        if(list) {
+            list.innerHTML = ""; 
+            loadContacts();
+        }
     }
 }
 
-function closeChat() { document.getElementById("sidebar").classList.remove("hidden"); }
-function goToProfile() { window.location.href = isGroup ? `group-profile.html?id=${currentPartnerId}` : `user-profile.html?id=${currentPartnerId}`; }
-function logout() { if(confirm("Keluar?")) { localStorage.clear(); window.location.href="index.html"; } }
+function closeChat() { 
+    document.getElementById("sidebar").classList.remove("hidden"); 
+}
+function goToProfile() { 
+    window.location.href = isGroup ? `group-profile.html?id=${currentPartnerId}` : `user-profile.html?id=${currentPartnerId}`; 
+}
+function logout() { 
+    if(confirm("Keluar?")) { 
+        localStorage.clear(); 
+        window.location.href="index.html"; 
+    } 
+}
 
 /* =========================================
     VIDEO CALL (JITSI)
@@ -1928,7 +2095,8 @@ function activateWakeLock() {
 }
 
 function showCallOverlay(roomName, type, name, photoUrl) {
-    currentCallRoom = roomName; currentCallType = type;
+    currentCallRoom = roomName; 
+    currentCallType = type;
     const nameEl = document.getElementById("call-overlay-name");
     const avatarEl = document.getElementById("call-overlay-avatar");
     if(nameEl) nameEl.innerText = name;
@@ -1941,8 +2109,16 @@ function hideCallOverlay() {
     const ringtone = document.getElementById("ringtoneSound");
     if(ringtone) { ringtone.pause(); ringtone.currentTime = 0; }
 }
-function acceptCall() { if (currentCallRoom && currentCallType) { hideCallOverlay(); joinVideoCall(currentCallRoom, currentCallType); } }
-function rejectCall() { hideCallOverlay(); showToast("Panggilan ditolak"); }
+function acceptCall() { 
+    if (currentCallRoom && currentCallType) { 
+        hideCallOverlay(); 
+        joinVideoCall(currentCallRoom, currentCallType); 
+    } 
+}
+function rejectCall() { 
+    hideCallOverlay(); 
+    showToast("Panggilan ditolak"); 
+}
 
 /* =========================================
     MODAL PREVIEW GAMBAR & LIGHTBOX
@@ -1960,7 +2136,7 @@ function sendImage(input) {
             const scale = MAX_WIDTH / img.width;
             canvas.width = MAX_WIDTH;
             canvas.height = img.height * scale;
-            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.getContext('2d').drawImage(img,0, 0, canvas.width, canvas.height);
             pendingImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
             showImagePreview(pendingImageBase64);
         };
@@ -1992,11 +2168,28 @@ function toggleViewOnce() {
 function resetViewOnceUI() {
     const icon = document.getElementById("viewOnceIcon");
     const label = document.getElementById("viewOnceLabel");
-    if(isViewOnceEnabled) { if(icon) icon.className = "fas fa-eye-slash"; if(icon) icon.style.color = "#ff5e5e"; if(label) label.style.color = "#ff5e5e"; } 
-    else { if(icon) icon.className = "far fa-eye"; if(icon) icon.style.color = "#ccc"; if(label) label.style.color = "#ccc"; }
+    if(isViewOnceEnabled) { 
+        if(icon) {
+            icon.className = "fas fa-eye-slash"; 
+            icon.style.color = "#ff5e5e"; 
+        } 
+        if(label) label.style.color = "#ff5e5e"; 
+    } else { 
+        if(icon) {
+            icon.className = "far fa-eye"; 
+            icon.style.color = "#ccc"; 
+        } 
+        if(label) label.style.color = "#ccc"; 
+    }
 }
-function openLightbox(url) { document.getElementById("imageLightbox").style.display = 'flex'; document.getElementById("lightboxImg").src = url; }
-function closeLightbox() { document.getElementById("imageLightbox").style.display = 'none'; document.getElementById("lightboxImg").src = ''; }
+function openLightbox(url) { 
+    document.getElementById("imageLightbox").style.display = 'flex'; 
+    document.getElementById("lightboxImg").src = url; 
+}
+function closeLightbox() { 
+    document.getElementById("imageLightbox").style.display = 'none'; 
+    document.getElementById("lightboxImg").src = ''; 
+}
 function openViewOnceMessage(key) {
     if (!currentChatId) return;
     db.ref("chats/" + currentChatId + "/" + key).once("value", snap => {
@@ -2007,7 +2200,19 @@ function openViewOnceMessage(key) {
             const url = decryptData(m.text.replace("IMG:", ""));
             const contentDiv = msgEl.querySelector('.msg');
             if (contentDiv) {
-                contentDiv.innerHTML = `<img src="${url}" onclick="openLightbox('${url}')" style="max-width:100%; border-radius:10px; cursor:pointer;"><div style="font-size:10px; text-align:center; opacity:0.6;">Gambar dilihat</div>`;
+                // Safe binding
+                const img = document.createElement('img');
+                img.src = url;
+                img.style = "max-width:100%; border-radius:10px; cursor:pointer;";
+                img.onclick = () => openLightbox(url);
+                
+                contentDiv.innerHTML = ""; // Clear
+                contentDiv.appendChild(img);
+                
+                const seenText = document.createElement("div");
+                seenText.style = "font-size:10px; text-align:center; opacity:0.6;";
+                seenText.innerText = "Gambar dilihat";
+                contentDiv.appendChild(seenText);
             }
             viewOnceIgnoredKey = key;
             db.ref("chats/" + currentChatId + "/" + key).update({ deleted: true, text: encryptData("👁️ Gambar dilihat sekali"), replyTo: null, forwarded: null, viewOnce: false });
@@ -2019,7 +2224,6 @@ function openViewOnceMessage(key) {
     INIT FINAL
     ========================================= */
 window.onload = initApp;
-document.getElementById("text").onkeydown = e => { if(e.key === "Enter") send(); };
 
 function searchUser() {
     const query = document.getElementById('userSearch').value.toLowerCase();
@@ -2033,6 +2237,7 @@ function searchUser() {
 </script>
 </body>
 </html>
+
 
 
 
