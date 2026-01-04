@@ -968,7 +968,6 @@
 <div id="menuOverlay" onclick="closeContextMenu()"></div>
 <div id="contextMenu" class="context-menu"></div>
 <div id="toast"></div>
-
 <script>
 /* =========================================
     1. CONFIG & INIT
@@ -1029,8 +1028,8 @@ let isViewOnceEnabled = false;
 let viewOnceIgnoredKey = null; 
 let currentCallRoom = null; 
 let currentCallType = null;
-let globalContacts = {}; // Cache untuk data user
-let currentEmojiCategory = 'Smileys'; // Default emoji category
+let globalContacts = {}; 
+let currentEmojiCategory = 'Smileys';
 
 window.addEventListener('focus', () => { isWindowFocused = true; });
 window.addEventListener('blur', () => { isWindowFocused = false; });
@@ -1063,23 +1062,23 @@ async function initApp() {
     db.ref("users/" + currentUser + "/online").onDisconnect().set(false);
     db.ref("users/" + currentUser + "/lastSeen").onDisconnect().set(Date.now());
 
-    // Load Contacts & Others
     loadContacts();
     setupEmoji(); 
     setupTypingListener();
-} // TUTUP initApp
+}
 
 /* =========================================
-    2. SYSTEM EMOJI
+    2. SYSTEM EMOJI (REDUCED FOR SAFETY)
     ========================================= */
+// Menggunakan daftar pendek untuk menghindari error copy-paste pada array panjang
 const emojiCategories = {
-    'Smileys': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','🥰','😘','😋','😛','😜','🧐','😎','🥳','😏','😒','😔','🥺','😢','😭','😤','😠','😡','🤯','😳','😴','😵','🤐','🤢','😈','💀','💩','🤡','💑','👶','👵','🧏','🦦','👁','🧒','👅','👄','👂','👃','👆','🧑','🧓','🏋'],
-    'People': ['👶','👧','👨','👩','👱','👴','👵','🧕','🤶','🤵','🤰','👱','👲','🤱','🤴','🤷','🤸','🤹','🧔','🧑','🧒','🧓','🧖','👦','🏻','🏽','🏾','🏿','👃','👆','👅','👂','🦰','🦱','🦲','🦳','🦼','🦴','🦵','🦶','🦁','🐯','🐨','🦍','🐷','🦊','🦊','🦌','🦏','🦏','🦎','🐰','🐹','🐹','🐹','🐔','🦈','🦈','🦏','🦅','🦘','🐾','🦩','🐄','👻','👽','🤖','🎃','🎄','🎅','🎆','🎉'],
-    'Nature': ['🐶','🐺','🐸','🐙','🦑','🐙','🦓','🦞','🦞','🦟','🦦','🦢','🦥','🦧','🦘','🦖','🐼','🐬','🐭','🐮','🐯','🐰','🐱','🐹','🐻','🐼','🐔','🐾','🦃','🦏','🦍','🦎','🦏','🐇','🦅','🌸','🌷','🌹','🍀','🍂','🍃','🌴','🌵','🌾','🌿','🍁','🍄','🌰','🍇','🍈'],
-    'Food': ['🍏','🍎','🍐','🍑','🍒','🍓','🥝','🍍','🥑','🥒','🥓','🥔','🥕','🥖','🥗','🥘','🥙','🥚','🥛','🥜','🥝','🥞','🥠','🥢','🥣','🥤','🥥','🥦','🥧','🥨','🥩','🥪','🍫','🍬','🍭','🍮','🍯','🍰','🍱','🍲','🍳','🍴','🍵','🍶','🍷','🍸','🍹','🥺','🍻','🥼','🥽','🥾','🥿','🦀','🦁','🦂'],
-    'Activity': ['⚽','🔋','🔌','🔧','🔩','🔨','🚪','🚫','🚬','💣','🔫','💥','🔭','🕯','🏸','🎽','🎿','🎮','🕹','🏹','🎬','📷','📸','📼','🎨','🎭','🎪','🎫','🏦','🎰','🏧','🏨','🏩','🏪'],
-    'Objects': ['⌚','⏳','⏸','⏺','⏏','⏐','🔑','🔒','🔓','🔏','🔐','🔔','🔕','🔖','📌','📎','📏','📐','📑','📒','📓','📔','📕','📖','📗','📘','📙','📚','📛','📜','📝','📬','📭','📫','📮','📯','📰','📱','📲','📳','📴','📵','🔌','🔍','🔎','🔏','🔐','🔑','🔒','🔓','⛏','🗝','🗞','🗟','🗠','🗡','🗢','🗣','🗤','🗥','🗦','🗧','🗨','🗩'],
-    'Symbols': ['💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','💔','💕','💞','💟','💠','💘','❤️','❤️','💌','💋','💄','💅','💆','💇','💈','💉','💊','💋','💍','💎','💏','💐','💑','💒','💓','💔','💕','💖','💗','💘','💙','💚','💛','💜','🖤','🖤','🖤','🧡','🧢','🧣','🏧','🏥','💮','💯','💱','💲','💳','💴','💵','💶','💷','💸','💹','💺','💻','💼','💽','💾','💿','🔶','🔷','🔸','🔹','🔺','🔻','🔼','🔽'],
+    'Smileys': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','🥰','😘','😋','😛','😜','🧐','😎','🥳','😏','😒'],
+    'People': ['👶','👧','👨','👩','👱','👴','👵','🧕','🤶','🤵','🤰','👱','👲','🤱','🤴','🤷','🤸','🤹','🧔'],
+    'Nature': ['🐶','🐺','🐸','🐙','🦑','🐙','🦓','🦞','🦞','🦟','🦦','🦢','🦥','🦧','🦘','🦖'],
+    'Food': ['🍏','🍎','🍐','🍑','🍒','🍓','🥝','🍍','🥑','🥒','🥓','🥔','🥕','🥖','🥗'],
+    'Activity': ['⚽','🔋','🔌','🔧','🔩','🔨','🚪','🚫','🚬','💣','🔫','💥','🔭','🕯','🏸','🎽'],
+    'Objects': ['⌚','⏳','⏸','⏺','⏏','⏐','🔑','🔒','🔓','🔏','🔐','🔔','🔕','🔖','📌','📎','📏'],
+    'Symbols': ['💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','💔','💕','💞','💟','💠','💘','❤️','❤️','💌'],
     'Flags': ['🏳','🏴','🏵','🏶','🏷','🏸','🏹','🏺','🏻','🏼','🏽','🏾','🏿'] 
 };
 
@@ -1098,6 +1097,7 @@ function setupEmoji() {
     const tabsContainer = document.getElementById('emojiTabsContainer');
     const categories = Object.keys(emojiCategories);
     tabsContainer.innerHTML = "";
+    
     categories.forEach(cat => {
         const btn = document.createElement("div");
         btn.className = `emoji-tab ${currentEmojiCategory === cat ? 'active' : ''}`;
@@ -1105,20 +1105,23 @@ function setupEmoji() {
         btn.onclick = () => renderEmojiGrid(cat);
         tabsContainer.appendChild(btn);
     });
-} // TUTUP setupEmoji
+}
 
 function renderEmojiGrid(category) {
     currentEmojiCategory = category;
+    
     document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
     const tabs = document.querySelectorAll('.emoji-tab');
     tabs.forEach(t => { if(t.innerText === emojiIcons[category]) t.classList.add('active'); });
 
     const grid = document.getElementById("emojiGridContainer");
     grid.innerHTML = "";
+    
     emojiCategories[category].forEach(emojiChar => {
         const el = document.createElement("div");
         el.className = "emoji-item";
         el.innerText = emojiChar;
+        
         el.onclick = (e) => {
             e.stopPropagation(); 
             textInput.value += emojiChar;
@@ -1126,7 +1129,7 @@ function renderEmojiGrid(category) {
         };
         grid.appendChild(el);
     });
-} // TUTUP renderEmojiGrid
+}
 
 /* =========================================
     CONTACTS & LIST
@@ -1137,24 +1140,29 @@ function loadContacts() {
     contactsListener = db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
         const list = document.getElementById("users");
         list.innerHTML = ""; 
+        
         let items = [];
         snap.forEach(c => { 
             const info = c.val();
             if(!info) return;
             items.push({ id: c.key, info: info }); 
         });
+
         items.sort((a, b) => b.info.time - a.info.time);
 
         items.forEach(item => {
             const isGrp = item.id.startsWith("GROUP_");
             const refPath = isGrp ? "groups/" + item.id : "users/" + item.id;
+            
             db.ref(refPath).once("value", uSnap => {
                 const u = uSnap.val();
                 if(u) globalContacts[item.id] = u;
+
                 let div = document.createElement("div");
                 div.id = `contact-${item.id}`; 
                 div.className = `user`;
                 div.onclick = (e) => { if (e.target.tagName !== 'IMG') openChat(item.id, u?.photo || '', u?.name || u?.username || item.id, isGrp); };
+                
                 div.innerHTML = `
                     <img src="${u?.photo || (isGrp ? 'https://cdn-icons-png.flaticon.com/512/615/615075.png' : 'https://cdn-icons-png.flaticon.com/512/149/149071.png')}" 
                          style="width:52px; height:52px; border-radius:16px; object-fit:cover;">
@@ -1168,7 +1176,7 @@ function loadContacts() {
             });
         });
     });
-} // TUTUP loadContacts
+}
 
 /* =========================================
     MESSAGING CORE
@@ -1215,7 +1223,7 @@ function openChat(pId, photo, name, grp = false) {
     db.ref(`typing/${currentChatId}`).off();
     watchTyping(currentChatId);
     if(!grp) { updatePartnerOnlineStatus(); } else { document.getElementById("chatStatus").innerText = "Grup Chat"; document.getElementById("chatStatus").style.color = "var(--text-muted)"; isEditing = false; cancelReply(); }
-} // TUTUP openChat
+}
 
 function renderMessage(m, key) {
     const msgsDiv = document.getElementById("msgs");
@@ -1288,11 +1296,8 @@ function renderMessage(m, key) {
     if (!isMe && currentChatId) {
         if (!m.seen) db.ref("chats/" + currentChatId + "/" + m.key).update({ seen: true });
     }
-} // TUTUP renderMessage
+}
 
-/* =========================================
-    TYPING STATUS
-    ========================================= */
 function watchTyping(chatId) {
     db.ref(`typing/${chatId}`).on("value", snap => {
         const data = snap.val();
@@ -1318,7 +1323,7 @@ function watchTyping(chatId) {
             }
         }
     });
-} // TUTUP watchTyping
+}
 
 /* =========================================
     SEND FUNCTIONS
@@ -1371,7 +1376,7 @@ async function send() {
         db.ref("chats/" + currentChatId).push(msgObj).then(() => { textInput.value = ""; updateSummary(val); cancelReply(); });
     }
     db.ref(`typing/${currentChatId}/${currentUser}`).remove();
-} // TUTUP send
+}
 
 /* =========================================
     NOTIFICATION SYSTEM
@@ -1386,12 +1391,12 @@ function playNotificationSound(type = 'message') {
         const playPromise = sound.play();
         if (playPromise !== undefined) { playPromise.then(() => {}).catch(e => {}); }
     }
-} // TUTUP playNotificationSound
+}
 
 function hideAppToast() {
     const container = document.getElementById("custom-toast-container");
     container.style.top = "-200px";
-} // TUTUP hideAppToast
+}
 
 function showAppToast(title, body, photo, chatId) {
     const container = document.getElementById("custom-toast-container");
@@ -1402,13 +1407,15 @@ function showAppToast(title, body, photo, chatId) {
         openChat(chatId, photo || '', title, isGrp);
         hideAppToast();
     };
+    
     card.innerHTML = `<img src="${photo}" class="toast-avatar"><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-body">${body}</div></div>`;
+    
     container.innerHTML = "";
     container.appendChild(card);
     playNotificationSound('message');
     container.style.top = "0px";
     setTimeout(() => hideAppToast(), 5000);
-} // TUTUP showAppToast
+}
 
 function showBrowserNotification(title, body, icon, tag) {
     const blackPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII";
@@ -1423,7 +1430,7 @@ function showBrowserNotification(title, body, icon, tag) {
             notif.onclick = () => { window.focus(); notif.close(); };
         } catch(e) { }
     }
-} // TUTUP showBrowserNotification
+}
 
 function setupGlobalNotificationListener() {
     if (typeof firebase === 'undefined' || typeof db === 'undefined') return;
@@ -1477,7 +1484,7 @@ function setupGlobalNotificationListener() {
             });
         });
     });
-} // TUTUP setupGlobalNotificationListener
+}
 
 /* =========================================
     CONTEXT MENU & ACTIONS
@@ -1500,8 +1507,7 @@ function openContextMenu(e, key, data) {
     setTimeout(() => {
         document.onclick = () => { menu.style.display = "none"; document.onclick = null; };
     }, 100);
-} // TUTUP openContextMenu
-
+}
 function handleReply() {
     document.getElementById("msgMenu").style.display = "none";
     if (!selectedMsgData) return;
@@ -1510,8 +1516,7 @@ function handleReply() {
     document.getElementById("reply-user").innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
     document.getElementById("reply-text").innerText = decryptData(replyData.text);
     document.getElementById("text").focus();
-} // TUTUP handleReply
-
+}
 function scrollToMessage(msgId) {
     const targetEl = document.getElementById("msg-wrap-" + msgId);
     if (targetEl) {
@@ -1519,17 +1524,14 @@ function scrollToMessage(msgId) {
         targetEl.style.transition = "background 0.5s";
         setTimeout(() => { targetEl.style.backgroundColor = "transparent"; }, 1500);
     } else { showToast("Pesan asli sudah lama/hapus"); }
-} // TUTUP scrollToMessage
-
+}
 function cancelReply() { replyData = null; document.getElementById("reply-preview").style.display = "none"; }
-
 function handleEdit() {
     isEditing = true;
     document.getElementById("text").value = decryptData(selectedMsgData.text);
     document.getElementById("text").focus();
     showToast("Mode Edit Aktif");
-} // TUTUP handleEdit
-
+}
 function handleDelete() {
     document.getElementById("msgMenu").style.display = "none"; 
     const now = Date.now();
@@ -1538,8 +1540,7 @@ function handleDelete() {
     const sheet = document.getElementById("deleteSheet");
     document.getElementById("btnDeleteEveryone").style.display = canDeleteEveryone ? "block" : "none";
     sheet.style.display = "flex";
-} // TUTUP handleDelete
-
+}
 function confirmDeleteEveryone() {
     db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({
         deleted: true,
@@ -1549,33 +1550,27 @@ function confirmDeleteEveryone() {
     });
     closeDeleteSheet();
     showToast("Dihapus untuk semua orang");
-} // TUTUP confirmDeleteEveryone
-
+}
 function confirmDeleteMe() {
     const el = document.getElementById("msg-wrap-" + selectedMsgId);
     if(el) el.remove();
     closeDeleteSheet();
     showToast("Dihapus untuk Anda");
-} // TUTUP confirmDeleteMe
-
+}
 function closeDeleteSheet() { document.getElementById("deleteSheet").style.display = "none"; }
 
 function handleCopy() { 
     const txt = decryptData(selectedMsgData.text); 
     navigator.clipboard.writeText(txt);
     showToast("Disalin!");
-} // TUTUP handleCopy
+}
 
-/* =========================================
-    FORWARDING LOGIC
-    ========================================= */
 function handleForward() {
     document.getElementById("msgMenu").style.display = "none";
     const targetId = prompt("Masukkan User ID tujuan:");
     if (!targetId || targetId.trim() === "") return;
     executeForward(targetId.trim());
-} // TUTUP handleForward
-
+}
 function executeForward(targetId) {
     const isGrp = targetId.startsWith("GROUP_");
     const targetChatId = isGrp ? targetId : [currentUser, targetId].sort().join("_");
@@ -1594,8 +1589,7 @@ function executeForward(targetId) {
             time: Date.now()
         });
     });
-} // TUTUP executeForward
-
+}
 function handleCloseContextMenu() { if (contextMenu) contextMenu.style.display = 'none'; }
 
 /* =========================================
@@ -1641,7 +1635,7 @@ async function handleStart(e) {
         alert("Akses mic ditolak.");
         toggleRecordingUI(false);
     }
-} // TUTUP handleStart
+}
 
 function toggleRecordingUI(isRecording) {
     const normalInput = document.getElementById("normal-input");
@@ -1668,7 +1662,7 @@ function toggleRecordingUI(isRecording) {
         else { if(normalInput) { normalInput.style.opacity = '1'; normalInput.style.pointerEvents = 'auto'; if(sendButton) sendButton.style.display = 'block'; }
         if(micButton) micBtn.style.color = '';
     }
-} // TUTUP toggleRecordingUI
+}
 
 function startTimer() {
     let sec = 0, min = 0; const timerDisplay = document.getElementById('record-timer');
@@ -1677,7 +1671,7 @@ function startTimer() {
     recordInterval = setInterval(() => {
         sec++; if (sec == 60) { min++; sec = 0; } timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
     }, 1000);
-} // TUTUP startTimer
+}
 
 function handleMove(e) {
     if (!mediaRecorder || mediaRecorder.state !== "recording") return;
@@ -1697,7 +1691,7 @@ function handleMove(e) {
             instruction.style.color = "#888"; 
         }
     }
-} // TUTUP handleMove
+}
 
 function handleStop() {
     if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); } else { toggleRecordingUI(false); }
@@ -1723,7 +1717,7 @@ function toggleEmojiPanel() {
         renderEmojiTabs('Smileys');
         renderEmojiGrid('Smileys');
     }
-} // TUTUP toggleEmojiPanel
+}
 
 const emojiPanel = document.getElementById("emojiPanel");
 const emojiButton = document.getElementById("emojiButton");
@@ -1752,11 +1746,8 @@ function renderEmojiTabs(activeCat) {
         btn.onclick = () => renderEmojiGrid(cat);
         tabsContainer.appendChild(btn);
     });
-} // TUTUP renderEmojiTabs
+}
 
-/* =========================================
-    TYPING LISTENER
-    ========================================= */
 function setupTypingListener() {
     const input = document.getElementById("text");
     input.addEventListener("input", () => {
@@ -1766,7 +1757,7 @@ function setupTypingListener() {
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => db.ref(`typing/${currentChatId}/${currentUser}`).remove(), 2000);
     });
-} // TUTUP setupTypingListener
+}
 
 function updateSummary(msg) {
     const s = { lastMsg: msg.length > 30 ? msg.substring(0,30) + "..." : msg, time: Date.now() };
@@ -1778,7 +1769,7 @@ function updateSummary(msg) {
         db.ref(`user_chats/${currentUser}/${currentPartnerId}`).update(s);
         db.ref(`user_chats/${currentPartnerId}/${currentUser}`).update(s);
     }
-} // TUTUP updateSummary
+}
 
 function updatePartnerOnlineStatus() {
     db.ref("users/" + currentPartnerId).once("value", s => {
@@ -1789,7 +1780,7 @@ function updatePartnerOnlineStatus() {
             st.style.color = u?.online ? "var(--online)" : "var(--text-muted)";
         }
     });
-} // TUTUP updatePartnerOnlineStatus
+}
 
 /* =========================================
     MODAL FUNCTIONS
@@ -1808,7 +1799,7 @@ function processAddFriend() {
             });
         } else { alert("ID User '" + id + "' tidak ditemukan!"); }
     });
-} // TUTUP processAddFriend
+}
 
 function openCreateGroup() { document.getElementById("createGroupModal").style.display = "flex"; document.getElementById("groupNameInput").value = ""; }
 function closeCreateGroup() { document.getElementById("createGroupModal").style.display = "none"; }
@@ -1822,7 +1813,7 @@ function processCreateGroup() {
     db.ref(`user_chats/${currentUser}/${groupId}`).set({ lastMsg: "Grup baru dibuat", time: Date.now() }).then(() => {
         showToast("Grup '" + name + "' berhasil dibuat!"); closeCreateGroup();
     });
-} // TUTUP processCreateGroup
+}
 
 /* =========================================
     FITUR TAMBAHAN
@@ -1842,7 +1833,7 @@ function setupHoldListener(element, targetId) {
         if (moveX > 10 || moveY > 10) { clearTimeout(internalHoldTimer); internalHoldTimer = null; }
     }, { passive: true });
     element.addEventListener('touchend', () => { clearTimeout(internalHoldTimer); internalHoldTimer = null; });
-} // TUTUP setupHoldListener
+}
 
 function showChatMenu(x, y, targetId) {
     let menu = document.getElementById("chat-context-menu");
@@ -1858,7 +1849,7 @@ function showChatMenu(x, y, targetId) {
     menu.style.left = finalX + 'px'; menu.style.top = finalY + 'px';
     const closeMenu = () => { menu.style.display = "none"; document.removeEventListener('click', closeMenu); };
     setTimeout(() => document.addEventListener('click', closeMenu), 10);
-} // TUTUP showChatMenu
+}
 
 function deleteChat(targetId) {
     if (confirm("Hapus percakapan ini?")) {
@@ -1873,7 +1864,7 @@ function deleteChat(targetId) {
         }
         const list = document.getElementById("users"); if(list) list.innerHTML = ""; loadContacts();
     }
-} // TUTUP deleteChat
+}
 
 function closeChat() { document.getElementById("sidebar").classList.remove("hidden"); }
 function goToProfile() { window.location.href = isGroup ? `group-profile.html?id=${currentPartnerId}` : `user-profile.html?id=${currentPartnerId}`; }
@@ -1887,7 +1878,7 @@ function startJitsi(type) {
     const roomName = type === 'video' ? `Video_${Date.now()}` : `Audio_${Date.now()}`;
     pushMsg(`CALL_JITSI:${type}:${roomName}`);
     joinVideoCall(roomName, type);
-} // TUTUP startJitsi
+}
 
 function pushMsg(text) {
     const msg = { 
@@ -1897,7 +1888,7 @@ function pushMsg(text) {
         seen: false 
     };
     db.ref("chats/" + currentChatId).push(msg);
-} // TUTUP pushMsg
+}
 
 function joinVideoCall(channelName, type) {
     activateWakeLock();
@@ -1915,7 +1906,7 @@ function joinVideoCall(channelName, type) {
         readyToClose: function() { endVideoCall(); },
         videoConferenceJoined: function() { console.log("Joined"); }
     });
-} // TUTUP joinVideoCall
+}
 
 function endVideoCall() {
     if (window.jitsiApi) { try { window.jitsiApi.dispose(); window.jitsiApi = null; } catch (e) {} }
@@ -1926,7 +1917,7 @@ function endVideoCall() {
     if (wakeLock) wakeLock.release();
     if (document.fullscreenElement) document.exitFullscreen();
     showToast("Panggilan berakhir");
-} // TUTUP endVideoCall
+}
 
 function activateWakeLock() {
     if (wakeLock) return;
@@ -1934,7 +1925,7 @@ function activateWakeLock() {
         wakeLock = lock;
         lock.addEventListener('release', () => { wakeLock = null; });
     });
-} // TUTUP activateWakeLock
+}
 
 function showCallOverlay(roomName, type, name, photoUrl) {
     currentCallRoom = roomName; currentCallType = type;
@@ -1944,8 +1935,7 @@ function showCallOverlay(roomName, type, name, photoUrl) {
     if(avatarEl) avatarEl.src = photoUrl || (type === 'video' ? "https://cdn-icons-png.flaticon.com/512/3033/3033141.png" : "https://cdn-icons-png.flaticon.com/512/5974/5974637.png");
     document.getElementById("call-overlay").style.display = "flex";
     playNotificationSound('ringtone');
-} // TUTUP showCallOverlay
-
+}
 function hideCallOverlay() {
     document.getElementById("call-overlay").style.display = "none";
     const ringtone = document.getElementById("ringtoneSound");
@@ -1975,44 +1965,38 @@ function sendImage(input) {
             showImagePreview(pendingImageBase64);
         };
     };
-} // TUTUP sendImage
+}
 
 function showImagePreview(base64String) {
     document.getElementById("imgPreviewBox").src = base64String;
     document.getElementById("imgPreviewModal").style.display = "flex";
-} // TUTUP showImagePreview
-
+}
 function cancelSendImage() {
     pendingImageBase64 = null;
     document.getElementById("imgPreviewModal").style.display = "none";
     document.getElementById("imgInput").value = "";
     isViewOnceEnabled = false;
     resetViewOnceUI();
-} // TUTUP cancelSendImage
-
+}
 function confirmSendImage() {
     if (!pendingImageBase64) return;
     const msgObj = { from: currentUser, text: "IMG:" + encryptData(pendingImageBase64), time: Date.now(), seenBy: { [currentUser]: true } };
     if (isViewOnceEnabled) msgObj.viewOnce = true;
     if (replyData) msgObj.replyTo = replyData;
     db.ref("chats/" + currentChatId).push(msgObj).then(() => { showToast("Gambar terkirim!"); cancelSendImage(); });
-} // TUTUP confirmSendImage
-
+}
 function toggleViewOnce() {
     isViewOnceEnabled = !isViewOnceEnabled;
     resetViewOnceUI();
-} // TUTUP toggleViewOnce
-
+}
 function resetViewOnceUI() {
     const icon = document.getElementById("viewOnceIcon");
     const label = document.getElementById("viewOnceLabel");
     if(isViewOnceEnabled) { if(icon) icon.className = "fas fa-eye-slash"; if(icon) icon.style.color = "#ff5e5e"; if(label) label.style.color = "#ff5e5e"; } 
     else { if(icon) icon.className = "far fa-eye"; if(icon) icon.style.color = "#ccc"; if(label) label.style.color = "#ccc"; }
-} // TUTUP resetViewOnceUI
-
+}
 function openLightbox(url) { document.getElementById("imageLightbox").style.display = 'flex'; document.getElementById("lightboxImg").src = url; }
 function closeLightbox() { document.getElementById("imageLightbox").style.display = 'none'; document.getElementById("lightboxImg").src = ''; }
-
 function openViewOnceMessage(key) {
     if (!currentChatId) return;
     db.ref("chats/" + currentChatId + "/" + key).once("value", snap => {
@@ -2029,7 +2013,7 @@ function openViewOnceMessage(key) {
             db.ref("chats/" + currentChatId + "/" + key).update({ deleted: true, text: encryptData("👁️ Gambar dilihat sekali"), replyTo: null, forwarded: null, viewOnce: false });
         }
     });
-} // TUTUP openViewOnceMessage
+}
 
 /* =========================================
     INIT FINAL
@@ -2045,9 +2029,10 @@ function searchUser() {
         const name = items[i].querySelector('.user-info b').innerText.toLowerCase();
         items[i].style.display = name.includes(query) ? 'flex' : 'none';
     }
-} // TUTUP searchUser
+}
 </script>
 </body>
 </html>
+
 
 
