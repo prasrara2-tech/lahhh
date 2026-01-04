@@ -9,14 +9,20 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="image/genre/20.png">
 
-    <title>GoChat Pro - Premium Messaging</title>
+    <title>GoChat Pro - Ultimate Edition (Spam Emoji)</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- SCRIPT JITSI UNTUK VIDEO CALL -->
+    <script src="https://meet.jit.si/external_api.js"></script>
+  
     <style>
+    /* =========================================
+        1. CSS VARIABLES & RESET
+        ========================================= */
     :root {
         --bg-base: #0a0a0a;
         --glass-white: rgba(255, 255, 255, 0.03);
@@ -32,179 +38,394 @@
         --safe-bottom: env(safe-area-inset-bottom);
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+    * { 
+        box-sizing: border-box; 
+        -webkit-tap-highlight-color: transparent; 
+        outline: none; 
+        user-select: none; /* Mencegah seleksi teks global untuk UX native-like */
+    }
+    
     body { 
-        margin: 0; font-family: 'Inter', sans-serif; 
-        background: var(--bg-base); color: var(--text-main); 
-        height: 100dvh; overflow: hidden; 
+        margin: 0; 
+        font-family: 'Inter', sans-serif; 
+        background: var(--bg-base); 
+        color: var(--text-main); 
+        height: 100dvh; 
+        overflow: hidden; 
     }
-    .app { display: flex; height: 100%; width: 100%; position: relative; }
+    
+    .app { 
+        display: flex; 
+        height: 100%; 
+        width: 100%; 
+        position: relative; 
+    }
 
-    /* SIDEBAR */
+    /* =========================================
+        2. SIDEBAR STYLES
+        ========================================= */
     .sidebar { 
-        width: 30%; min-width: 320px; border-right: 1px solid var(--glass-border); 
-        display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-        z-index: 200; padding-top: var(--safe-top); background: var(--bg-base); 
+        width: 30%; 
+        min-width: 320px; 
+        border-right: 1px solid var(--glass-border); 
+        display: flex; 
+        flex-direction: column; 
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        z-index: 200; 
+        padding-top: var(--safe-top); 
+        background: var(--bg-base); 
     }
-    .side-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); position: relative; z-index: 10; }
-    .my-avatar { width: 45px; height: 45px; border-radius: 14px; object-fit: cover; cursor: pointer; border: 1px solid var(--glass-border); }
     
-    .search-container { padding: 15px 20px; }
+    .side-header { 
+        padding: 20px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        border-bottom: 1px solid var(--glass-border); 
+        position: relative; 
+        z-index: 10; 
+    }
+    
+    .my-avatar { 
+        width: 45px; 
+        height: 45px; 
+        border-radius: 14px; 
+        object-fit: cover; 
+        cursor: pointer; 
+        border: 1px solid var(--glass-border); 
+        transition: transform 0.2s;
+    }
+    .my-avatar:active { transform: scale(0.9); }
+    
+    .search-container { 
+        padding: 15px 20px; 
+    }
+    
     .search-box { 
-        background: var(--glass-white); border-radius: 15px; padding: 12px; 
-        display: flex; align-items: center; gap: 10px; border: 1px solid var(--glass-border); 
+        background: var(--glass-white); 
+        border-radius: 15px; 
+        padding: 12px; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        border: 1px solid var(--glass-border); 
     }
-    .search-box input { background: transparent; border: none; color: white; width: 100%; font-size: 14px; }
     
-    #users { flex: 1; overflow-y: auto; padding: 10px; }
-    .user { 
-        padding: 14px; border-radius: 18px; display: flex; align-items: center; 
-        gap: 14px; cursor: pointer; margin-bottom: 8px; transition: 0.2s; position: relative; 
+    .search-box input { 
+        background: transparent; 
+        border: none; 
+        color: white; 
+        width: 100%; 
+        font-size: 14px; 
     }
-    .user:hover { background: var(--glass-white); }
-    .user img { width: 52px; height: 52px; border-radius: 16px; object-fit: cover; }
-    .user-info { flex: 1; min-width: 0; }
-    .user-info b { display: block; font-size: 15px; color: #fff; margin-bottom: 2px; }
-    .user-info span { font-size: 12px; color: var(--text-muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    #users { 
+        flex: 1; 
+        overflow-y: auto; 
+        padding: 10px; 
+        scrollbar-width: none; /* Sembunyikan scrollbar standar untuk custom style */
+    }
+    /* Custom Scrollbar untuk Webkit */
+    #users::-webkit-scrollbar { width: 5px; }
+    #users::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    
+    .user { 
+        padding: 14px; 
+        border-radius: 18px; 
+        display: flex; 
+        align-items: center; 
+        gap: 14px; 
+        cursor: pointer; 
+        margin-bottom: 8px; 
+        transition: background 0.2s; 
+        position: relative; 
+    }
+    
+    .user:hover { 
+        background: var(--glass-white); 
+    }
+    
+    .user img { 
+        width: 52px; 
+        height: 52px; 
+        border-radius: 16px; 
+        object-fit: cover; 
+        pointer-events: none;
+    }
+    
+    .user-info { 
+        flex: 1; 
+        min-width: 0; 
+    }
+    
+    .user-info b { 
+        display: block; 
+        font-size: 15px; 
+        color: #fff; 
+        margin-bottom: 2px; 
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .user-info span { 
+        font-size: 12px; 
+        color: var(--text-muted); 
+        display: block; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+    }
     
     .unread-badge { 
-        background: var(--accent); color: #000; min-width: 20px; height: 20px; 
-        border-radius: 10px; font-size: 10px; font-weight: bold; 
-        display: flex; align-items: center; justify-content: center; padding: 0 6px; 
+        background: var(--accent); 
+        color: #000; 
+        min-width: 20px; 
+        height: 20px; 
+        border-radius: 10px; 
+        font-size: 10px; 
+        font-weight: bold; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 0 6px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    /* CHAT AREA */
+    /* =========================================
+        3. CHAT AREA STYLES
+        ========================================= */
     .chat { 
-        flex: 1; display: flex; flex-direction: column; 
-        background: var(--glass-thick); position: relative; 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
+        background: var(--glass-thick); 
+        position: relative; 
         padding-top: var(--safe-top); 
     }
+    
     .chat-header { 
-        height: 70px; padding: 0 20px; display: flex; align-items: center; 
-        gap: 15px; border-bottom: 1px solid var(--glass-border); 
-        backdrop-filter: blur(20px); z-index: 10; background: rgba(10,10,10,0.8);
+        height: 70px; 
+        padding: 0 20px; 
+        display: flex; 
+        align-items: center; 
+        gap: 15px; 
+        border-bottom: 1px solid var(--glass-border); 
+        backdrop-filter: blur(20px); 
+        z-index: 10; 
+        background: rgba(10,10,10,0.8); 
+        transition: background 0.3s;
     }
 
     .msgs { 
-        flex: 1; overflow-y: auto; padding: 20px; 
-        display: flex; flex-direction: column; gap: 12px; 
-        scroll-behavior: smooth; background: radial-gradient(circle at center, #111 0%, #0a0a0a 100%);
+        flex: 1; 
+        overflow-y: auto; 
+        padding: 20px; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+        scroll-behavior: smooth; 
+        background: radial-gradient(circle at center, #111 0%, #0a0a0a 100%);
+        scrollbar-width: none;
     }
     
-    .msg-wrap { display: flex; flex-direction: column; max-width: 75%; position: relative; }
-    .msg-wrap.me { align-self: flex-end; align-items: flex-end; }
-    .msg-wrap.you { align-self: flex-start; align-items: flex-start; }
+    .msg-wrap { 
+        display: flex; 
+        flex-direction: column; 
+        max-width: 75%; 
+        position: relative; 
+        margin-bottom: 2px;
+    }
+    
+    .msg-wrap.me { 
+        align-self: flex-end; 
+        align-items: flex-end; 
+    }
+    
+    .msg-wrap.you { 
+        align-self: flex-start; 
+        align-items: flex-start; 
+    }
 
     .msg { 
-        padding: 10px 14px; border-radius: 18px; 
-        font-size: 15px; word-wrap: break-word; animation: fadeIn 0.3s ease;
+        padding: 10px 14px; 
+        border-radius: 18px; 
+        font-size: 15px; 
+        word-wrap: break-word; 
+        animation: fadeIn 0.3s ease;
         position: relative;
+        line-height: 1.4;
+        user-select: text;
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .me .msg { background: var(--me-chat); color: #000; border-bottom-right-radius: 4px; }
-    .you .msg { background: var(--you-chat); color: white; border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); }
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(10px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
     
-    .msg-meta { display: flex; align-items: center; gap: 4px; font-size: 10px; opacity: 0.7; margin-top: 4px; }
-    .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; }
+    .me .msg { 
+        background: var(--me-chat); 
+        color: #000; 
+        border-bottom-right-radius: 4px; 
+    }
+    
+    .you .msg { 
+        background: var(--you-chat); 
+        color: white; 
+        border-bottom-left-radius: 4px; 
+        border: 1px solid var(--glass-border); 
+    }
+    
+    .msg-meta { 
+        display: flex; 
+        align-items: center; 
+        gap: 4px; 
+        font-size: 10px; 
+        opacity: 0.7; 
+        margin-top: 4px; 
+        margin-right: 2px;
+        font-variant-numeric: tabular-nums;
+    }
+    
+    .msg img { 
+        max-width: 100%; 
+        border-radius: 10px; 
+        margin-top: 5px; 
+        cursor: pointer; 
+        display: block;
+    }
 
-    .del-btn { font-size: 10px; color: #ff5e5e; cursor: pointer; opacity: 0; transition: 0.2s; margin-top: 2px; }
-    .msg-wrap:hover .del-btn { opacity: 1; }
-    .deleted { font-style: italic; opacity: 0.5; }
+    .del-btn { 
+        font-size: 10px; 
+        color: #ff5e5e; 
+        cursor: pointer; 
+        opacity: 0; 
+        transition: 0.2s; 
+        margin-top: 2px; 
+    }
+    
+    .msg-wrap:hover .del-btn { 
+        opacity: 1; 
+    }
+    
+    .deleted { 
+        font-style: italic; 
+        opacity: 0.5; 
+    }
 
-    audio { height: 35px; filter: invert(1) hue-rotate(180deg); max-width: 210px; margin-top: 5px; }
+    /* Voice Note Player Styling */
+    audio { 
+        height: 35px; 
+        filter: invert(1) hue-rotate(180deg); 
+        max-width: 210px; 
+        margin-top: 5px; 
+        border-radius: 15px;
+    }
+    
+    /* Call Message Style */
     .call-msg { 
-        text-align: center; font-size: 13px; background: rgba(212, 163, 115, 0.1); 
-        padding: 15px; border-radius: 15px; margin: 5px 0; color: var(--accent); 
-        border: 1px dashed var(--accent); cursor: pointer;
+        text-align: center; 
+        font-size: 13px; 
+        background: rgba(212, 163, 115, 0.1); 
+        padding: 15px; 
+        border-radius: 15px; 
+        margin: 5px 0; 
+        color: var(--accent); 
+        border: 1px dashed var(--accent); 
+        cursor: pointer; 
+        font-weight: 600;
+    }
+    .call-msg:active { background: rgba(212, 163, 115, 0.2); }
+
+    /* =========================================
+        4. INPUT AREA & RECORDING
+        ========================================= */
+    .input-area { 
+        padding: 10px 2px; /* Padding samping sangat tipis untuk HP */
+        background: var(--bg-base); 
+        border-top: 1px solid var(--glass-border); 
+        /* Padding bawah 30px agar tidak kepotong Home Bar */
+        padding-bottom: calc(30px + env(safe-area-inset-bottom)); 
+        position: relative;
+        min-height: 60px; 
     }
 
-    /* --- MODIFIKASI DIMULAI DISINI --- */
-    
-/* --- 1. INPUT AREA (BASE: KHUSUS HP) --- */
-.input-area { 
-    padding: 10px 2px; /* Padding samping sangat tipis untuk HP */
-    background: var(--bg-base); 
-    border-top: 1px solid var(--glass-border); 
-    /* Padding bawah 30px agar tidak kepotong Home Bar */
-    padding-bottom: calc(30px + env(safe-area-inset-bottom)); 
-    position: relative;
-    min-height: 60px; 
-}
-
-/* --- 1. INPUT ROW (BASE: KHUSUS HP) --- */
-.input-row { 
-    display: flex; 
-    align-items: center; 
-    gap: 4px; 
-    background: var(--glass-white); 
-    padding: 10px 2px; /* Padding samping dijadikan 2px supaya benar-benar mepet */
-    border-radius: 25px; 
-    border: 1px solid var(--glass-border);
-    min-height: 45px;
-    width: 100%; /* Pastikan lebar 100% */
-}
-
-/* --- 2. RECORDING UI --- */
-#recording-ui {
-    display: none; 
-    align-items: center;
-    justify-content: space-between;
-    width: 100%; 
-    flex: 1; /* PENTING: Memaksa elemen ini mengisi sisa ruang kosong */
-    background: transparent; 
-    padding: 0px 2px; /* Padding vertikal dan horizontal dijadikan 0/2px */
-    border-radius: 12px;
-    pointer-events: none; 
-    position: relative;
-    z-index: 10;
-    overflow: visible; /* Supaya animasi bisa keluar dikit */
-}
-
-/* --- 3. RECORD INFO (Timer Kiri) --- */
-.record-info {
-    color: #ff5e5e;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px; /* Dikit diperkecil lagi */
-    font-weight: 600;
-    flex-shrink: 0; /* JANGAN DIKECILKAN otomatis, biarkan timer tetap utuh */
-}
-
-/* --- 4. INSTRUKSI SLIDE (KANAN) --- */
-#slide-instruction {
-    color: #888;
-    font-size: 9px; 
-    animation: slideLeft 1.5s infinite;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Rata kanan */
-    gap: 2px;
-    
-    /* --- PENTING: INI YANG MENCEGAH KELEBARAN --- */
-    max-width: 45%; /* Batasi lebar maksimal hanya 45% layar HP */
-    white-space: nowrap; /* Jangan turun ke baris bawah */
-    overflow: hidden; /* Sembunyikan teks yang kepanjangan */
-    text-overflow: ellipsis; /* Tampilkan titik-titik (...) jika kepanjangan */
-}
-
-/* =========================================
-   KHUSUS LAPTOP (AGAR KEMBALI BAGUS)
-   ========================================= */
-@media (min-width: 769px) {
-    .input-row {
-        gap: 10px; 
-        padding: 10px 15px;
+    .input-row { 
+        display: flex; 
+        align-items: center; 
+        gap: 4px; 
+        background: var(--glass-white); 
+        padding: 10px 2px; /* Padding samping dijadikan 2px supaya benar-benar mepet */
+        border-radius: 25px; 
+        border: 1px solid var(--glass-border);
+        min-height: 45px;
+        width: 100%; /* Pastikan lebar 100% */
+        transition: box-shadow 0.2s;
+    }
+    .input-row:focus-within {
+        box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.1);
+        border-color: var(--accent);
     }
 
+    /* RECORDING UI */
+    #recording-ui {
+        display: none; 
+        align-items: center;
+        justify-content: space-between;
+        width: 100%; 
+        flex: 1; /* PENTING: Memaksa elemen ini mengisi sisa ruang kosong */
+        background: transparent; 
+        padding: 0px 2px; /* Padding vertikal dan horizontal dijadikan 0/2px */
+        border-radius: 12px;
+        pointer-events: none; 
+        position: relative;
+        z-index: 10;
+        overflow: visible; /* Supaya animasi bisa keluar dikit */
+    }
+
+    /* RECORD INFO (Timer Kiri) */
+    .record-info {
+        color: #ff5e5e;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px; /* Dikit diperkecil lagi */
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        flex-shrink: 0; /* JANGAN DIKECILKAN otomatis, biarkan timer tetap utuh */
+    }
+
+    /* INSTRUKSI SLIDE (KANAN) */
     #slide-instruction {
-        font-size: 13px;
-        max-width: 60%; /* Di laptop boleh lebih lebar */
-        white-space: nowrap; /* Tetap satu baris */
+        color: #888;
+        font-size: 9px; 
+        animation: slideLeft 1.5s infinite;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* Rata kanan */
+        gap: 2px;
+        
+        /* PENTING: INI YANG MENCEGAH KELEBARAN */
+        max-width: 45%; /* Batasi lebar maksimal hanya 45% layar HP */
+        white-space: nowrap; /* Jangan turun ke baris bawah */
+        overflow: hidden; /* Sembunyikan teks yang kepanjangan */
+        text-overflow: ellipsis; /* Tampilkan titik-titik (...) jika kepanjangan */
     }
-}
-    
+
+    /* KHUSUS LAPTOP (AGAR KEMBALI BAGUS) */
+    @media (min-width: 769px) {
+        .input-row {
+            gap: 10px; 
+            padding: 10px 15px;
+        }
+
+        #slide-instruction {
+            font-size: 13px;
+            max-width: 60%; /* Di laptop boleh lebih lebar */
+            white-space: nowrap; /* Tetap satu baris */
+        }
+    }
+        
     #text { 
         flex: 1; 
         border: none; 
@@ -212,6 +433,7 @@
         color: white; 
         padding: 8px 2px; /* Padding atas bawah disesuaikan agar rapi */
         font-size: 16px; /* Tetap 16px agar tidak zoom */
+        user-select: text;
     }
     
     .btn-action { 
@@ -220,36 +442,149 @@
         color: var(--text-muted); 
         font-size: 20px; 
         cursor: pointer; 
-        /* Tambahkan sedikit margin agar tidak menempel tepi */
         margin: 0 2px;
+        transition: color 0.2s, transform 0.1s;
     }
+    .btn-action:active { transform: scale(0.9); color: white; }
 
+    /* =========================================
+        5. EMOJI PANEL (KATEGORI BANYAK)
+        ========================================= */
     #emojiPanel {
-        display: none; position: absolute; bottom: 85px; left: 15px; right: 15px;
-        background: #161616; border: 1px solid var(--glass-border); border-radius: 20px;
-        padding: 15px; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px;
-        max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+        display: none; 
+        position: absolute; 
+        bottom: 85px; 
+        left: 15px; 
+        right: 15px;
+        background: #1a1a1a; 
+        border: 1px solid var(--glass-border); 
+        border-radius: 20px;
+        padding: 0; /* Padding 0 karena kita pakai header tabs sendiri */
+        max-height: 350px; /* Tinggi maksimal agar tidak nutupin layar penuh */
+        z-index: 1000; 
+        box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        pointer-events: auto;
     }
-    .emoji-item { font-size: 24px; text-align: center; cursor: pointer; padding: 5px; border-radius: 10px; transition: 0.2s; }
-    .emoji-item:hover { background: var(--glass-white); }
+
+    /* Header Panel (Tombol Tutup & Kategori) */
+    .emoji-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--glass-border);
+        background: #222;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .emoji-close-btn {
+        color: #ff5e5e;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+    .emoji-close-btn:hover { background: rgba(255, 94, 94, 0.2); }
+
+    /* Scrollable Category Tabs */
+    .emoji-tabs-container {
+        display: flex;
+        overflow-x: auto;
+        padding: 10px;
+        background: #161616;
+        border-bottom: 1px solid var(--glass-border);
+        scrollbar-width: none; /* Scrollbar halus */
+    }
     
-    .recording-active { animation: pulse-red 1s infinite; color: #ff5e5e !important; }
-    @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-
-    .btn-send { 
-        background: var(--accent); border: none; width: 38px; height: 38px; /* Dikit diperkecil */
-        border-radius: 50%; color: black; cursor: pointer; 
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0; /* Mencegah tombol mengecil */
+    .emoji-tab {
+        font-size: 20px;
+        padding: 8px 12px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.2s, transform 0.2s;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
     }
 
+    .emoji-tab:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+    
+    .emoji-tab.active { 
+        opacity: 1; 
+        background: var(--accent); 
+        transform: scale(1.1); 
+        box-shadow: 0 0 10px rgba(212, 163, 115, 0.3);
+    }
+
+    /* Emoji Grid Area */
+    .emoji-grid-container {
+        overflow-y: auto;
+        padding: 10px;
+        flex: 1;
+        scrollbar-width: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); /* Grid responsif */
+        gap: 8px;
+        height: 220px; /* Tinggi area scroll */
+    }
+    
+    .emoji-item { 
+        font-size: 24px; 
+        text-align: center; 
+        cursor: pointer; 
+        padding: 5px; 
+        border-radius: 8px; 
+        transition: background 0.1s, transform 0.1s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1 / 1; /* Agar kotak persegi sempurna */
+    }
+    
+    .emoji-item:hover { 
+        background: var(--glass-white); 
+        transform: scale(1.2); 
+    }
+    .emoji-item:active { 
+        background: rgba(255,255,255,0.1); 
+        transform: scale(0.9); 
+    }
+
+    /* Tombol Send */
+    .btn-send { 
+        background: var(--accent); 
+        border: none; 
+        width: 38px; 
+        height: 38px; 
+        border-radius: 50%; 
+        color: black; 
+        cursor: pointer; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        flex-shrink: 0; 
+        transition: transform 0.1s;
+    }
+    .btn-send:active { transform: scale(0.9); }
+
+    /* Toast Standar */
     #toast { 
         position: fixed; top: 40px; left: 50%; transform: translateX(-50%); 
         background: var(--accent); color: black; padding: 10px 20px; 
         border-radius: 20px; z-index: 9999; display: none; font-weight: bold; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
 
-   .modal {
+    /* Modals */
+    .modal {
         display: none; 
         position: fixed; 
         inset: 0; 
@@ -270,7 +605,7 @@
         .chat { width: 100%; }
     }
 
-    /* Style untuk Menu Pilihan */
+    /* Message Context Menu */
     .msg-context-menu {
         display: none; position: fixed; z-index: 2000;
         background: #1a1a1a; border: 1px solid var(--glass-border);
@@ -282,9 +617,10 @@
     .menu-item:hover { background: var(--glass-white); color: var(--accent); }
     .menu-item.danger { color: #ff5e5e; }
 
+    /* Reply Preview */
     #reply-preview {
         display: none; 
-        padding: 10px 12px; /* Padding dikit diperkecil */
+        padding: 10px 12px; 
         background: #1a1a1a; 
         border-left: 4px solid var(--accent); 
         border-top: 1px solid var(--glass-border);
@@ -296,7 +632,6 @@
         z-index: 5;
         animation: slideUp 0.2s ease;
     }
-
     @keyframes slideUp {
         from { transform: translateY(100%); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
@@ -320,19 +655,7 @@
     .sheet-btn.danger { background: #ff4757; color: white; }
     .sheet-btn.cancel { background: #333; color: white; }
 
-    .user.pinned {
-        background: rgba(212, 163, 115, 0.12) !important;
-        border-left: 4px solid var(--accent) !important;
-    }
-
-    .pin-icon {
-        color: var(--accent);
-        font-size: 11px;
-        margin-left: 6px;
-        transform: rotate(45deg);
-        display: inline-block;
-    } 
-
+    /* Sidebar Context Menu */
     .context-menu {
         position: fixed !important;
         display: none;
@@ -345,7 +668,6 @@
         overflow: hidden !important;
         padding: 5px 0 !important;
     }
-
     .context-menu-item {
         padding: 12px 16px !important;
         font-size: 14px !important;
@@ -357,79 +679,225 @@
         background: transparent !important;
         transition: 0.2s;
     }
+    .context-menu-item:hover { background: rgba(255, 255, 255, 0.1) !important; }
+    .context-menu-item i { width: 20px !important; text-align: center !important; color: #d4af37 !important; }
+    .context-menu-item.danger { color: #ff5e5e !important; }
+    .context-menu-item.danger i { color: #ff5e5e !important; }
 
-    .context-menu-item:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .context-menu-item i {
-        width: 20px !important;
-        text-align: center !important;
-        color: #d4af37 !important; 
-    }
-
-    .context-menu-item.danger {
-        color: #ff5e5e !important;
-    }
-
-    .context-menu-item.danger i {
-        color: #ff5e5e !important;
-    }
-
-    #recording-ui[style*="display: flex"] {
-        pointer-events: auto;
-    }
-
-    .blink {
-        animation: blink-red 1s infinite;
-    }
-
-    @keyframes blink-red {
-        0% { opacity: 1; }
-        50% { opacity: 0.2; }
-        100% { opacity: 1; }
-    }
-
+    /* Recording Animation */
+    .blink { animation: blink-red 1s infinite; }
+    @keyframes blink-red { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
 
     @keyframes slideLeft {
-        0% { 
-            transform: translateX(0); 
-            opacity: 1; 
-        }
-        100% { 
-            transform: translateX(-15px); 
-            opacity: 0.2; 
-        }
+        0% { transform: translateX(0); opacity: 1; }
+        100% { transform: translateX(-15px); opacity: 0.2; }
     }
 
-    #normal-input {
-        transition: all 0.2s ease;
-    }
-    .btn-action, #micButton {
-        cursor: pointer; 
-        user-select: none; 
-    }
+    #normal-input { transition: all 0.2s ease; }
+    .btn-action, #micButton { cursor: pointer; user-select: none; }
     
-    .vn-player {
-        max-width: 200px;
-        height: 35px;
-        border-radius: 20px;
-        filter: sepia(20%) saturate(70%) grayscale(1);
+    .vn-player { max-width: 200px; height: 35px; border-radius: 20px; filter: sepia(20%) saturate(70%) grayscale(1); }
+    .fa-users, .fa-user-plus { position: relative; z-index: 10; }
+
+    /* =========================================
+        6. MODAL VIDEO CALL & OVERLAY (JITSI)
+        ========================================= */
+    #videoCallModal {
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        background: #000; 
+        z-index: 10000000; 
+        width: 100%; 
+        height: 100%;
+        padding-top: env(safe-area-inset-top); 
+        padding-bottom: env(safe-area-inset-bottom);
     }
+    #jitsi-container { width: 100%; height: 100%; display: none; }
+
+    #call-overlay {
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        background: #000; 
+        z-index: 10000000; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        text-align: center; 
+        color: white; 
+        overflow: hidden;
+    }
+    .call-bg-anim {
+        position: absolute; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%); 
+        width: 200px; 
+        height: 200px; 
+        border-radius: 50%; 
+        background: radial-gradient(circle, rgba(46, 204, 113, 0.4) 0%, rgba(0,0,0,0) 70%); 
+        animation: pulse-ring 2s infinite; 
+        z-index: 1; 
+    }
+    .call-bg-anim:nth-child(2) { animation-delay: 0.5s; }
+    .call-bg-anim:nth-child(3) { animation-delay: 1s; }
+    @keyframes pulse-ring {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; } 
+        100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+    }
+    .call-avatar {
+        width: 150px; 
+        height: 150px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        border: 4px solid var(--accent); 
+        z-index: 2; 
+        margin-bottom: 20px; 
+        animation: float 3s ease-in-out infinite; 
+        box-shadow: 0 0 30px rgba(212, 163, 115, 0.5); 
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); } 
+        50% { transform: translateY(-15px); } 
+        100% { transform: translateY(0px); } 
+    }
+    .call-info { z-index: 2; margin-bottom: 50px; }
+    .call-name { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+    .call-status { font-size: 16px; color: #ccc; animation: blink-text 1.5s infinite; }
+    @keyframes blink-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .call-actions {
+        position: absolute; bottom: 60px; display: flex; gap: 40px; z-index: 2; width: 100%; justify-content: center; padding-bottom: env(safe-area-inset-bottom);
+    }
+    .btn-call {
+        width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: none; transition: transform 0.2s;
+    }
+    .btn-call:active { transform: scale(0.9); }
+    .btn-accept { background: #2ecc71; color: white; box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
+    .btn-reject { background: #e74c3c; color: white; box-shadow: 0 0 20px rgba(231, 76, 60, 0.4); }
+
+    @media (max-width: 768px) {
+        .call-name { font-size: 24px; }
+        .call-avatar { width: 120px; height: 120px; }
+        .call-actions { bottom: 40px; }
+    }
+
+    /* =========================================
+        7. MODAL PREVIEW GAMBAR (FITUR BARU)
+        ========================================= */
+    #imgPreviewModal {
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        background: rgba(0, 0, 0, 0.95); 
+        z-index: 5000; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        backdrop-filter: blur(10px);
+    }
+    .preview-content {
+        width: 90%; max-width: 400px; text-align: center; display: flex; flex-direction: column; gap: 20px;
+    }
+    #imgPreviewBox {
+        max-width: 100%; max-height: 70vh; border-radius: 15px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--glass-border);
+    }
+    .preview-actions { display: flex; gap: 20px; justify-content: center; width: 100%; }
+    .btn-preview {
+        flex: 1; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
+    }
+    .btn-preview.cancel { background: #333; color: white; }
+    .btn-preview.send { background: var(--accent); color: black; }
+    .btn-preview:active { transform: scale(0.95); }
     
-    .fa-users, .fa-user-plus {
-        position: relative;
-        z-index: 10;
+    /* FITUR SEKALI LIHAT (VIEW ONCE) */
+    .view-once-container { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; }
+    .view-once-label { font-size: 12px; color: #ccc; }
+    .view-once-blur { position: relative; cursor: pointer; overflow: hidden; }
+    .view-once-blur img { filter: blur(20px); width: 100%; display: block; }
+    .view-once-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 10px; }
+    
+    /* LIGHTBOX */
+    #imageLightbox {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 6000; justify-content: center; align-items: center; flex-direction: column; cursor: pointer;
     }
+    #imageLightbox img { max-width: 90%; max-height: 80vh; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain; }
+    #lightbox-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+
+    /* =========================================
+        8. CUSTOM TOAST NOTIFICATION
+        ========================================= */
+    #custom-toast-container {
+        position: fixed; top: -200px; left: 0; right: 0; z-index: 99999; padding: 10px; display: flex; justify-content: center; pointer-events: none; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    #custom-toast-card {
+        background: #1a1a1a; width: 90%; max-width: 400px; border-radius: 15px; padding: 15px; display: flex; align-items: flex-start; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); animation: slideDown 0.3s ease-out; cursor: pointer; pointer-events: auto;
+    }
+    #custom-toast-card:active { transform: scale(0.98); background: #252525; }
+    .toast-avatar { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; border: 2px solid var(--accent); }
+    .toast-content { flex: 1; }
+    .toast-title { color: white; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .toast-body { color: #ccc; font-size: 13px; line-height: 1.4; }
+    .toast-time { font-size: 10px; color: #666; margin-top: 4px; }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Pulse Red Animation */
+    .recording-active { animation: pulse-red 1s infinite; color: #ff5e5e !important; }
+    @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 </style>
 </head>
 <body>
 
-<div id="toast"></div>
+    <!-- AUDIO FILES (Pastikan ada di folder Anda) -->
+    <audio id="notificationSound" src="note.mp3" preload="auto"></audio>
+    <audio id="ringtoneSound" src="night-owl.mp3" preload="auto" loop></audio>
 
-<audio id="notificationSound" src="note.mp3" preload="auto"></audio>
+    <!-- CUSTOM TOAST CONTAINER (UNTUK NOTIFIKASI IN-APP) -->
+    <div id="custom-toast-container"></div>
 
-<audio id="ringtoneSound" src="night-owl.mp3" preload="auto" loop></audio>
+    <!-- MODAL VIDEO CALL -->
+    <div id="videoCallModal">
+        <div style="position: absolute; top: 20px; right: 20px; z-index: 10;">
+            <button onclick="endVideoCall()" style="background: #ff5e5e; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;"><i class="fas fa-phone-slash"></i> Tutup</button>
+        </div>
+        <div id="jitsi-container" style="width: 100%; height: 100%; display: none;"></div>
+    </div>
+
+    <!-- OVERLAY PANGGILAN MASUK -->
+    <div id="call-overlay">
+        <div class="call-bg-anim"></div><div class="call-bg-anim"></div><div class="call-bg-anim"></div>
+        <img id="call-overlay-avatar" src="" class="call-avatar">
+        <div class="call-info">
+            <div id="call-overlay-name" class="call-name">Nama</div>
+            <div class="call-status">Sedang Menelepon...</div>
+        </div>
+        <div class="call-actions">
+            <button onclick="rejectCall()" class="btn-call btn-reject"><i class="fas fa-phone-slash"></i></button>
+            <button onclick="acceptCall()" class="btn-call btn-accept"><i class="fas fa-phone"></i></button>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW GAMBAR -->
+    <div id="imgPreviewModal">
+        <div class="preview-content">
+            <div style="font-size: 18px; font-weight: 600;">Lihat Gambar</div>
+            <img id="imgPreviewBox" src="" alt="Preview">
+            <div class="preview-actions">
+                <div class="view-once-container" onclick="toggleViewOnce()">
+                    <i id="viewOnceIcon" class="far fa-eye"></i> 
+                    <span id="viewOnceLabel" class="view-once-label">Sekali Lihat</span>
+                </div>
+                <button class="btn-preview cancel" onclick="cancelSendImage()"><i class="fas fa-times"></i> Batal</button>
+                <button class="btn-preview send" onclick="confirmSendImage()"><i class="fas fa-paper-plane"></i> Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="imageLightbox" onclick="closeLightbox()">
+        <div id="lightbox-close"><i class="fas fa-times"></i></div>
+        <img id="lightboxImg" src="">
+    </div>
 
 <div class="app">
     <div class="sidebar" id="sidebar">
@@ -461,7 +929,7 @@
                 <i class="fa fa-shield-halved" style="font-size:45px; color:var(--accent)"></i>
             </div>
             <h2 style="letter-spacing:2px; margin-bottom:5px;">GOCHAT <span style="color:var(--accent)">PRO</span></h2>
-            <p style="color:var(--text-muted); font-size:14px; max-width:250px;">Enkripsi End-to-End AES-256 Aktif.</p>
+            <p style="color:var(--text-muted); font-size:14px; max-width:250px;">Enkripsi End-to-End Aktif.</p>
         </div>
 
         <div id="chat-header-area" class="chat-header" style="display:none;">
@@ -488,40 +956,52 @@
                 <div id="reply-text" style="font-size:11px; color:#bbb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Pesan</div>
             </div>
 
-            <div id="emojiPanel"></div>
+            <!-- PANEL EMOJI UPGRADE (KATEGORI BANYAK) -->
+            <div id="emojiPanel">
+                <div class="emoji-header">
+                    <!-- Judul (Opsional) -->
+                    <!-- <span style="color:white; font-weight:bold; font-size:14px;">Emoji</span> -->
+                    
+                    <!-- Tombol Tutup (Wajib agar bisa menutup manual) -->
+                    <i class="fas fa-times emoji-close-btn" onclick="toggleEmojiPanel()"></i>
+                </div>
 
-           <div class="input-row">
-            <div id="normal-input" style="display:flex; flex:1; align-items:center; gap:10px;">
-                <button id="emojiButton" class="btn-action"><i class="far fa-smile"></i></button>
-                <!-- Tombol Gambar -->
-<label for="imgInput" class="btn-action">
-    <i class="far fa-image"></i>
-</label>
-<!-- Input File Tersembunyi -->
-<input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImage(this)">
-                <input type="text" id="text" placeholder="Ketik pesan..." autocomplete="off">
+                <!-- Container Tab Kategori (Scrollable Horizontal) -->
+                <div class="emoji-tabs-container" id="emojiTabsContainer">
+                    <!-- Akan diisi oleh JS -->
+                </div>
+
+                <!-- Container Grid Emoji (Scrollable Vertical) -->
+                <div class="emoji-grid-container" id="emojiGridContainer">
+                    <!-- Akan diisi oleh JS -->
+                </div>
             </div>
 
-           <div id="recording-ui">
-            <div class="record-info">
-                <i class="fas fa-microphone blink"></i>
-                <span id="record-timer">00:00</span>
-            </div>
-            <div id="slide-instruction">
-                <i class="fas fa-chevron-left"></i> Geser ke kiri untuk batal
-            </div>
-        </div>
+            <div class="input-row">
+                <div id="normal-input" style="display:flex; flex:1; align-items:center; gap:10px;">
+                    <button id="emojiButton" class="btn-action"><i class="far fa-smile"></i></button>
+                    <!-- Tombol Gambar -->
+                    <label for="imgInput" class="btn-action"><i class="far fa-image"></i></label>
+                    <!-- Input File Tersembunyi -->
+                    <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImage(this)">
+                    <input type="text" id="text" placeholder="Ketik pesan..." autocomplete="off">
+                </div>
 
-            <div style="display:flex; align-items:center; gap:5px;">
-                <button id="micButton" class="btn-action"><i class="fas fa-microphone"></i></button>
-                <button id="sendButton" class="btn-send" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+                <div id="recording-ui">
+                    <div class="record-info"><i class="fas fa-microphone blink"></i><span id="record-timer">00:00</span></div>
+                    <div id="slide-instruction"><i class="fas fa-chevron-left"></i> Geser ke kiri untuk batal</div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <button id="micButton" class="btn-action"><i class="fas fa-microphone"></i></button>
+                    <button id="sendButton" class="btn-send" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODALS DIPINDAHKAN KE SINI (LUAR APP) -->
-
+<!-- MODALS -->
 <div id="addFriendModal" class="modal">
     <div class="modal-content">
         <h3 style="color:var(--accent); margin-top:0;">Tambah Teman</h3>
@@ -560,10 +1040,12 @@
 
 <div id="menuOverlay" onclick="closeContextMenu()"></div>
 <div id="contextMenu" class="context-menu"></div>
+<div id="toast"></div>
 
+</body>
 <script>
 /* =========================================
-    CONFIG & INIT
+    1. CONFIG & INIT
     ========================================= */
 const firebaseConfig = {
     apiKey: "AIzaSyCEamepceiYZtcqlcRnRmFHe0smkGfu_A4",
@@ -577,6 +1059,8 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const currentUser = localStorage.getItem("gochat_user");
 const SECRET_KEY = "Global_Key_123";
+
+// DOM Elements
 const contextMenu = document.getElementById('contextMenu');
 const menuOverlay = document.getElementById('menuOverlay');
 const micBtn = document.getElementById("micButton");
@@ -585,6 +1069,7 @@ const recordingUI = document.getElementById("recording-ui");
 const textInput = document.getElementById("text");
 const normalInput = document.querySelector(".input-area");
 
+// Global Variables
 let currentChatId = null;
 let activeChatRef = null; 
 let currentPartnerId = null;
@@ -604,12 +1089,30 @@ let currentMsgRef = null;
 let startX;
 let isCancelled = false;
 let recordInterval;
-/* =========================================
-    CONTACTS & LIST (FIX DOUBLE RENDER)
-    ========================================= */
-let contactsListener = null; // Variabel untuk menyimpan referensi listener lama
+let localStream = null;
+let jitsiApi = null;
+let globalNotifListener = null; 
+let chatListeners = {};
+let lastProcessedMsgKey = null;
+let isWindowFocused = document.hasFocus();
+let isNotificationSetupDone = false;
+let contactsListener = null; 
+let unreadListeners = {}; 
 
-function initApp() {
+// --- VARIABEL FITUR BARU ---
+let pendingImageBase64 = null; 
+let isViewOnceEnabled = false; 
+let viewOnceIgnoredKey = null; 
+let currentCallRoom = null; 
+let currentCallType = null;
+
+// --- VARIABEL EMOJI PANEL ---
+let currentEmojiCategory = 'Smileys'; // Kategori default
+
+window.addEventListener('focus', () => { isWindowFocused = true; });
+window.addEventListener('blur', () => { isWindowFocused = false; });
+
+async function initApp() {
     if(!currentUser) { window.location.href="index.html"; return; }
     
     if ('serviceWorker' in navigator) {
@@ -636,162 +1139,406 @@ function initApp() {
     db.ref("users/" + currentUser + "/online").onDisconnect().set(false);
     db.ref("users/" + currentUser + "/lastSeen").onDisconnect().set(Date.now());
 
+    // Load Contacts & Others
     loadContacts();
-    setupEmoji();
+    setupEmoji(); // PANGGIL FUNGSI EMOJI VERSI BARU
     setupTypingListener();
 }
 
 /* =========================================
-    FUNGSI GROUP (SUDAH DIPERBAIKI - TIDAK GANDA)
+    2. SYSTEM EMOJI (BANYAK KATEGORI)
     ========================================= */
-function openCreateGroup() { 
-    document.getElementById("createGroupModal").style.display = "flex"; 
-    document.getElementById("groupNameInput").value = "";
+const emojiCategories = {
+    'Smileys': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','🥰','😘','😋','😛','😜','🧐','😎','🥳','😏','😒','😔','🥺','😢','😭','😤','😠','😡','🤯','😳','😴','😵','🤐','🤢','😈','💀','💩','🤡','💑','👶','👵','🧏','🦦','👁','🧒','👅','👄','👂','👃','👆','🧑','🧓','🏋'],
+    'People': ['👶','👧','👨','👩','👱','👴','👵','🧕','🤶','🤵','🤰','👱','👲','🤱','🤴','🤷','🤸','🤹','🧔','🧑','🧒','🧓','🧖','👦','🏻','🏽','🏾','🏿','👃','👆','👅','👂','🦰','🦱','🦲','🦳','🦼','🦴','🦵','🦶','🦁','🐯','🐨','🦍','🐷','🦊','🦊','🦌','🦏','🦏','🦎','🐰','🐹','🐹','🐹','🐔','🦈','🦈','🦏','🦅','🦘','🐾','🦩','🐄','👻','👽','🤖','🎃','🎄','🎅','🎆','🎉'],
+    'Nature': ['🐶','🐺','🐸','🐙','🦑','🐙','🦓','🦞','🦞','🦟','🦦','🦢','🦥','🦧','🦘','🦖','🐼','🐬','🐭','🐮','🐯','🐰','🐱','🐹','🐻','🐼','🐔','🐾','🦃','🦏','🦍','🦎','🦏','🐇','🦅','🌸','🌷','🌹','🍀','🍂','🍃','🌴','🌵','🌾','🌿','🍁','🍄','🌰','🍇','🍈'],
+    'Food': ['🍏','🍎','🍐','🍑','🍒','🍓','🥝','🍍','🥑','🥒','🥓','🥔','🥕','🥖','🥗','🥘','🥙','🥚','🥛','🥜','🥝','🥞','🥠','🥢','🥣','🥤','🥥','🥦','🥧','🥨','🥩','🥪','🍫','🍬','🍭','🍮','🍯','🍰','🍱','🍲','🍳','🍴','🍵','🍶','🍷','🍸','🍹','🥺','🍻','🥼','🥽','🥾','🥿','🦀','🦁','🦂'],
+    'Activity': ['⚽','🔋','🔌','🔧','🔩','🔨','🚪','🚫','🚬','💣','🔫','💥','🔭','🕯','🏸','🎽','🎿','🎮','🕹','🏹','🎬','📷','📸','📼','🎨','🎭','🎪','🎫','🏦','🎰','🏧','🏨','🏩','🏪'],
+    'Objects': ['⌚','⏳','⏸','⏺','⏏','⏐','🔑','🔒','🔓','🔏','🔐','🔔','🔕','🔖','📌','📎','📏','📐','📑','📒','📓','📔','📕','📖','📗','📚','📙','📚','📛','📜','📝','📬','📭','📫','📮','📯','📰','📱','📲','📳','📴','📵','🔌','🔍','🔎','🔏','🔐','🔑','🔒','🔓','⛏','🗝','🗞','🗟','🗠','🗡','🗢','🗣','🗤','🗥','🗦','🗧','🗨','🗩'],
+    'Symbols': ['💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','💔','💕','💞','💟','💠','💘','❤️','❤️','💌','💋','💄','💅','💆','💇','💈','💉','💊','💋','💍','💎','💏','💐','💑','💒','💓','💔','💕','💖','💗','💘','💙','💚','💛','💜','🖤','🖤','🖤','🧡','🧢','🧣','🏧','🏥','💮','💯','💱','💲','💳','💴','💵','💶','💷','💸','💹','💺','💻','💼','💽','💾','💿','🔶','🔷','🔸','🔹','🔺','🔻','🔼'],
+    'Flags': ['🏳','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴','🏴","; // Padding panjang dihapus
+
+    /* Custom Scrollbar untuk Panel Emoji */
+    #emojiTabsContainer::-webkit-scrollbar { height: 4px; }
+    #emojiTabsContainer::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    #emojiGridContainer::-webkit-scrollbar { width: 5px; }
+    #emojiGridContainer::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+    /* Tombol Panggil Emoji */
+    .emoji-close-btn { color: #aaa; font-size: 18px; }
+    .emoji-close-btn:hover { color: #fff; }
+
+</style>
+</head>
+<body>
+
+    <!-- AUDIO FILES -->
+    <audio id="notificationSound" src="note.mp3" preload="auto"></audio>
+    <audio id="ringtoneSound" src="night-owl.mp3" preload="auto" loop></audio>
+
+    <!-- CUSTOM TOAST CONTAINER -->
+    <div id="custom-toast-container"></div>
+
+    <!-- MODAL VIDEO CALL -->
+    <div id="videoCallModal">
+        <div style="position: absolute; top: 20px; right: 20px; z-index: 10;">
+            <button onclick="endVideoCall()" style="background: #ff5e5e; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;"><i class="fas fa-phone-slash"></i> Tutup</button>
+        </div>
+        <div id="jitsi-container" style="width: 100%; height: 100%; display: none;"></div>
+    </div>
+
+    <!-- OVERLAY PANGGILAN MASUK -->
+    <div id="call-overlay">
+        <div class="call-bg-anim"></div><div class="call-bg-anim"></div><div class="call-bg-anim"></div>
+        <img id="call-overlay-avatar" src="" class="call-avatar">
+        <div class="call-info">
+            <div id="call-overlay-name" class="call-name">Nama</div>
+            <div class="call-status">Sedang Menelepon...</div>
+        </div>
+        <div class="call-actions">
+            <button onclick="rejectCall()" class="btn-call btn-reject"><i class="fas fa-phone-slash"></i></button>
+            <button onclick="acceptCall()" class="btn-call btn-accept"><i class="fas fa-phone"></i></button>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW GAMBAR -->
+    <div id="imgPreviewModal">
+        <div class="preview-content">
+            <div style="font-size: 18px; font-weight: 600;">Lihat Gambar</div>
+            <img id="imgPreviewBox" src="" alt="Preview">
+            <div class="preview-actions">
+                <div class="view-once-container" onclick="toggleViewOnce()">
+                    <i id="viewOnceIcon" class="far fa-eye"></i> 
+                    <span id="viewOnceLabel" class="view-once-label">Sekali Lihat</span>
+                </div>
+                <button class="btn-preview cancel" onclick="cancelSendImage()"><i class="fas fa-times"></i> Batal</button>
+                <button class="btn-preview send" onclick="confirmSendImage()"><i class="fas fa-paper-plane"></i> Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="imageLightbox" onclick="closeLightbox()">
+        <div id="lightbox-close"><i class="fas fa-times"></i></div>
+        <img id="lightboxImg" src="">
+    </div>
+
+<div class="app">
+    <div class="sidebar" id="sidebar">
+        <div class="side-header">
+            <div style="display:flex; align-items:center;" onclick="window.location.href='profile.html'">
+                <img id="myPhotos" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="my-avatar">
+                <div id="myName" style="margin-left:12px; font-weight:600; font-size:18px;">...</div>
+            </div>
+            <div style="display:flex; gap:18px;">
+                <i class="fa fa-users" onclick="openCreateGroup()" style="color:var(--accent); font-size:18px; cursor:pointer;"></i>
+                <i class="fa fa-user-plus" onclick="openAddFriend()" style="color:var(--accent); font-size:18px; cursor:pointer;"></i>
+                <i class="fa fa-sign-out-alt" onclick="logout()" style="color:#ff5e5e; font-size:18px; cursor:pointer;"></i>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fa fa-search" style="color:var(--accent)"></i>
+                <input type="text" id="userSearch" placeholder="Cari percakapan..." oninput="searchUser()">
+            </div>
+        </div>
+
+        <div id="users"></div>
+    </div>
+
+    <div class="chat">
+        <div id="welcome-screen" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px;">
+            <div style="width:100px; height:100px; background:var(--glass-white); border-radius:30px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; border:1px solid var(--glass-border);">
+                <i class="fa fa-shield-halved" style="font-size:45px; color:var(--accent)"></i>
+            </div>
+            <h2 style="letter-spacing:2px; margin-bottom:5px;">GOCHAT <span style="color:var(--accent)">PRO</span></h2>
+            <p style="color:var(--text-muted); font-size:14px; max-width:250px;">Enkripsi End-to-End Aktif.</p>
+        </div>
+
+        <div id="chat-header-area" class="chat-header" style="display:none;">
+            <i class="fas fa-arrow-left" onclick="closeChat()" style="font-size:18px; cursor:pointer;"></i>
+            <img id="chatAvatar" src="" onclick="goToProfile()" style="width:42px; height:42px; border-radius:12px; margin-left:5px; object-fit:cover;">
+            <div id="chat-info-block" style="flex:1; margin-left:5px; min-width:0;" onclick="goToProfile()">
+                <b id="chatName" style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">...</b>
+                <div id="chatStatus" style="font-size:11px;">...</div>
+            </div>
+            <div style="display:flex; gap:22px; color:var(--accent); font-size:18px;">
+                <i class="fas fa-phone" onclick="startJitsi('audio')" style="cursor:pointer;"></i>
+                <i class="fas fa-video" onclick="startJitsi('video')" style="cursor:pointer;"></i>
+            </div>
+        </div>
+
+        <div id="msgs" class="msgs" style="display:none;"></div>
+
+        <div id="inputArea" class="input-area" style="display:none;">
+            <div id="reply-preview" onclick="if(replyData) scrollToMessage(replyData.id)" style="cursor:pointer;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <b id="reply-user" style="color:var(--accent); font-size:12px;">Nama</b>
+                    <i class="fa fa-times" onclick="event.stopPropagation(); cancelReply()" style="cursor:pointer; color:#888; padding:5px;"></i>
+                </div>
+                <div id="reply-text" style="font-size:11px; color:#bbb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Pesan</div>
+            </div>
+
+            <!-- PANEL EMOJI UPGRADE -->
+            <div id="emojiPanel">
+                <!-- Header (Tutup Manual) -->
+                <div class="emoji-header">
+                    <!-- Tombol Tutup (Manual) -->
+                    <i class="fas fa-times emoji-close-btn" onclick="toggleEmojiPanel()"></i>
+                </div>
+                
+                <!-- Container Tab Kategori (Scrollable) -->
+                <div class="emoji-tabs-container" id="emojiTabsContainer">
+                    <!-- Dibuat Oleh JS -->
+                </div>
+
+                <!-- Container Grid Emoji (Scrollable) -->
+                <div class="emoji-grid-container" id="emojiGridContainer">
+                    <!-- Dibuat Oleh JS -->
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div id="normal-input" style="display:flex; flex:1; align-items:center; gap:10px;">
+                    <button id="emojiButton" class="btn-action"><i class="far fa-smile"></i></button>
+                    <label for="imgInput" class="btn-action"><i class="far fa-image"></i></label>
+                    <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImage(this)">
+                    <input type="text" id="text" placeholder="Ketik pesan..." autocomplete="off">
+                </div>
+
+                <div id="recording-ui">
+                    <div class="record-info"><i class="fas fa-microphone blink"></i><span id="record-timer">00:00</span></div>
+                    <div id="slide-instruction"><i class="fas fa-chevron-left"></i> Geser ke kiri untuk batal</div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <button id="micButton" class="btn-action"><i class="fas fa-microphone"></i></button>
+                    <button id="sendButton" class="btn-send" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div id="addFriendModal" class="modal">
+    <div class="modal-content">
+        <h3 style="color:var(--accent); margin-top:0;">Tambah Teman</h3>
+        <input type="text" id="friendInput" placeholder="ID User (Contoh: Budi_1234)" style="width:100%; padding:14px; border-radius:12px; background:#000; border:1px solid #333; color:white; margin:15px 0; text-align:center;">
+        <button onclick="processAddFriend()" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:black;">TAMBAH KONTAK</button>
+        <p onclick="closeAddFriend()" style="margin-top:20px; color:#666; cursor:pointer; font-size:14px;">Batal</p>
+    </div>
+</div>
+
+<div id="createGroupModal" class="modal">
+    <div class="modal-content">
+        <h3 style="color:var(--accent); margin-top:0;">Buat Grup</h3>
+        <input type="text" id="groupNameInput" placeholder="Nama Grup" style="width:100%; padding:14px; border-radius:12px; background:#000; border:1px solid #333; color:white; margin:15px 0; text-align:center;">
+        <button onclick="processCreateGroup()" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:black;">BUAT GRUP</button>
+        <p onclick="closeCreateGroup()" style="margin-top:20px; color:#666; cursor:pointer; font-size:14px;">Batal</p>
+    </div>
+</div>
+
+<div id="msgMenu" class="msg-context-menu">
+    <div class="menu-item" onclick="handleReply()"><i class="fa fa-reply"></i> Balas</div>
+    <div class="menu-item" onclick="handleCopy()"><i class="fa fa-copy"></i> Salin</div>
+    <div class="menu-item" id="menu-edit" onclick="handleEdit()"><i class="fa fa-edit"></i> Edit</div>
+    <div class="menu-item" onclick="handleForward()"><i class="fa fa-share"></i> Teruskan</div>
+    <hr style="border:0; border-top:1px solid #333; margin:0;">
+    <div class="menu-item danger" onclick="handleDelete()"><i class="fa fa-trash"></i> Hapus</div>
+</div>
+
+<div id="deleteSheet" class="action-sheet-overlay" onclick="closeDeleteSheet()">
+    <div class="action-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-header">Hapus pesan?</div>
+        <button id="btnDeleteEveryone" class="sheet-btn danger" onclick="confirmDeleteEveryone()">Hapus untuk Semua</button>
+        <button class="sheet-btn danger" onclick="confirmDeleteMe()">Hapus untuk Saya</button>
+        <button class="sheet-btn cancel" onclick="closeDeleteSheet()">Batal</button>
+    </div>
+</div>
+
+<div id="menuOverlay" onclick="closeContextMenu()"></div>
+<div id="contextMenu" class="context-menu"></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================
+    CONFIG & INIT
+    ========================================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyCEamepceiYZtcqlcRnRmFHe0smkGfu_A4",
+    authDomain: "gochat-35172.firebaseapp.com",
+    databaseURL: "https://gochat-35172-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "gochat-35172",
+    storageBucket: "gochat-35172.appspot.com",
+    appId: "1:206571646434:web:4036d43695a00474499dbb"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const currentUser = localStorage.getItem("gochat_user");
+const SECRET_KEY = "Global_Key_123";
+
+// DOM Elements
+const contextMenu = document.getElementById('contextMenu');
+const menuOverlay = document.getElementById('menuOverlay');
+const micBtn = document.getElementById("micButton");
+const sendBtn = document.getElementById("sendButton");
+const recordingUI = document.getElementById("recording-ui");
+const textInput = document.getElementById("text");
+const normalInput = document.querySelector(".input-area");
+
+// Global Variables
+let currentChatId = null;
+let activeChatRef = null; 
+let currentPartnerId = null;
+let isGroup = false;
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+let vnBlob = null;
+let typingTimeout;
+let selectedMsgId = null;
+let selectedMsgData = null;
+let isEditing = false;
+let replyData = null;
+let groupMembersCount = {};
+let holdTimer;
+let currentMsgRef = null;
+let startX;
+let isCancelled = false;
+let recordInterval;
+let localStream = null;
+let jitsiApi = null;
+let globalNotifListener = null; 
+let chatListeners = {};
+let lastProcessedMsgKey = null;
+let isWindowFocused = document.hasFocus();
+let isNotificationSetupDone = false;
+let contactsListener = null; 
+let unreadListeners = {}; 
+let pendingImageBase64 = null; 
+let isViewOnceEnabled = false; 
+let viewOnceIgnoredKey = null; 
+let currentCallRoom = null; 
+let currentCallType = null;
+
+// Focus
+window.addEventListener('focus', () => { isWindowFocused = true; });
+window.addEventListener('blur', () => { isWindowFocused = false; });
+
+// --- FUNGSI TOGGLE EMOJI PANEL ---
+function toggleEmojiPanel() {
+    const panel = document.getElementById("emojiPanel");
+    if(panel.style.display === 'flex') {
+        panel.style.display = 'none';
+    } else {
+        panel.style.display = 'flex';
+        // Render default kategori
+        renderEmojiTabs('Smileys');
+        renderEmojiGrid('Smileys');
+    }
 }
 
-function closeCreateGroup() { 
-    document.getElementById("createGroupModal").style.display = "none"; 
-}
-
-function processCreateGroup() {
-    const name = document.getElementById("groupNameInput").value.trim();
+async function initApp() {
+    if(!currentUser) { window.location.href="index.html"; return; }
     
-    if(!name) {
-        showToast("Nama grup tidak boleh kosong!");
-        return;
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('SW OK'))
+            .catch(err => console.error('Gagal SW:', err));
     }
 
-    const groupId = "GROUP_" + Date.now();
-    const groupData = {
-        id: groupId,
-        name: name,
-        admin: currentUser,
-        photo: "https://cdn-icons-png.flaticon.com/512/615/615075.png",
-        createdAt: Date.now()
-    };
-
-    db.ref("groups/" + groupId).set(groupData);
-    db.ref(`group_members/${groupId}/${currentUser}`).set(true);
+    if (Notification.permission !== "granted") {
+        try {
+            Notification.requestPermission();
+        } catch (e) {}
+    }
     
-    db.ref(`user_chats/${currentUser}/${groupId}`).set({
-        lastMsg: "Grup baru dibuat",
-        time: Date.now()
-    }).then(() => {
-        showToast("Grup '" + name + "' berhasil dibuat!");
-        closeCreateGroup();
+    // Setup User
+    db.ref("users/" + currentUser).on("value", s => {
+        const d = s.val();
+        if(d) {
+            document.getElementById("myName").innerText = d.username;
+            document.getElementById("myPhotos").src = d.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            db.ref("users/" + currentUser).update({ online: true, lastSeen: Date.now() });
+        }
     });
+    db.ref("users/" + currentUser + "/online").onDisconnect().set(false);
+    db.ref("users/" + currentUser + "/lastSeen").onDisconnect().set(Date.now());
+
+    // Load Contacts & Others
+    loadContacts();
+    setupEmoji(); // Panggil setupEmoji() baru
+    setupTypingListener();
 }
 
 /* =========================================
-    FUNGSI ADD FRIEND (SUDAH DIPERBAIKI - TIDAK GANDA)
+    SETUP EMOJI (SPAM & STAY OPEN)
     ========================================= */
-function openAddFriend() { 
-    document.getElementById("addFriendModal").style.display = "flex"; 
-    document.getElementById("friendInput").value = "";
-}
-
-function closeAddFriend() { 
-    document.getElementById("addFriendModal").style.display = "none"; 
-}
-
-function processAddFriend() {
-    const id = document.getElementById("friendInput").value.trim();
+function setupEmoji() {
+    // Render Tab Kategori
+    const tabsContainer = document.getElementById('emojiTabsContainer');
+    const categories = Object.keys(emojiCategories);
     
-    if(!id) {
-        showToast("ID Teman tidak boleh kosong!");
-        return;
-    }
+    tabsContainer.innerHTML = "";
+    
+    categories.forEach(cat => {
+        const btn = document.createElement('div');
+        btn.className = `emoji-tab ${currentEmojiCategory === cat ? 'active' : ''}`;
+        btn.innerHTML = emojiIcons[cat] || cat.substring(0, 1);
+        btn.onclick = () => renderEmojiGrid(cat);
+        tabsContainer.appendChild(btn);
+    });
+}
 
-    if(id === currentUser) {
-        showToast("Tidak bisa menambahkan diri sendiri!");
-        return;
-    }
+const emojiIcons = {
+    'Smileys': '😊',
+    'People': '👥',
+    'Nature': '🌷',
+    'Food': '🍔',
+    'Activity': '🏃',
+    'Objects': '🎈',
+    'Symbols': '❤',
+    'Flags': '🚩'
+};
 
-    db.ref("users/" + id).once("value", s => {
-        if(s.exists()) {
+function renderEmojiGrid(category) {
+    currentEmojiCategory = category;
+    
+    // Update style tab active
+    document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+    // Cari tab yang sesuai dan kasih active
+    const tabs = document.querySelectorAll('.emoji-tab');
+    tabs.forEach(t => { if(t.innerText === emojiIcons[category]) t.classList.add('active'); });
+
+    // Render Grid
+    const grid = document.getElementById('emojiGridContainer');
+    grid.innerHTML = "";
+    
+    emojiCategories[category].forEach(emojiChar => {
+        const el = document.createElement("div");
+        el.className = "emoji-item";
+        el.innerText = emojiChar;
+        
+        // --- LOGIKA TOMBOL (STOP PROPAGATION) ---
+        el.onclick = (e) => {
+            // 1. Mencegah event naik ke document/body
+            e.stopPropagation(); 
             
-            // 1. TAMBAHKAN KE DAFTAR CHAT SAYA (Agar muncul di sidebar saya)
-            db.ref(`user_chats/${currentUser}/${id}`).update({ 
-                lastMsg: "Kontak baru", 
-                time: Date.now() 
-            });
-
-            // 2. TAMBAHKAN KE DAFTAR CHAT TEMAN (Agar muncul di sidebar dia) <-- INI YANG HILANG
-            db.ref(`user_chats/${id}/${currentUser}`).update({ 
-                lastMsg: "Permintaan pertemanan baru", 
-                time: Date.now() 
-            }).then(() => {
-                showToast("Berhasil menambahkan teman!");
-                closeAddFriend();
-            });
-
-        } else {
-            alert("ID User '" + id + "' tidak ditemukan!");
-        }
-    });
-}
-/* =========================================
-    TYPING STATUS LOGIC
-    ========================================= */
-function setupTypingListener() {
-    const input = document.getElementById("text");
-    input.addEventListener("input", () => {
-        if(!currentChatId) return;
-        
-        const myDisplayName = document.getElementById("myName").innerText;
-        
-        db.ref(`typing/${currentChatId}/${currentUser}`).set(myDisplayName);
-        
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
-            db.ref(`typing/${currentChatId}/${currentUser}`).remove();
-        }, 2000);
-    });
-}
-
-function watchTyping(chatId) {
-    db.ref(`typing/${chatId}`).on("value", snap => {
-        const typers = snap.val();
-        const statusEl = document.getElementById("chatStatus");
-        
-        if(!typers) {
-            if(isGroup) { 
-                statusEl.innerText = "Grup Chat"; 
-                statusEl.style.color = "var(--text-muted)"; 
-            } else { 
-                updatePartnerOnlineStatus(); 
-            }
-            return;
-        }
-
-        let otherTypers = Object.keys(typers).filter(uid => uid !== currentUser);
-
-        if(otherTypers.length > 0) {
-            statusEl.style.color = "var(--accent)";
+            // 2. Masukkan Emoji ke Input
+            textInput.value += emojiChar;
             
-            if(isGroup) {
-                let names = otherTypers.map(uid => typers[uid]);
-                statusEl.innerText = `${names.join(", ")} sedang mengetik...`;
-            } else {
-                statusEl.innerText = "sedang mengetik...";
-            }
-        } else {
-            if(isGroup) {
-                statusEl.innerText = "Grup Chat";
-                statusEl.style.color = "var(--text-muted)";
-            } else {
-                updatePartnerOnlineStatus();
-            }
-        }
-    });
-}
+            // 3. Fokus tetap agar bisa spam
+            textInput.focus();
+            
+            // 4. Get posisi scroll
+            const rect = grid.getBoundingClientRect();
+            // Scroll ke elemen baris agar user bisa spam emoji tanpa scroll manual
+            el.scrollIntoView({ block: 'center', behavior: 'instant', block: 'nearest' });
+        };
 
-function updatePartnerOnlineStatus() {
-    db.ref("users/" + currentPartnerId).once("value", s => {
-        const u = s.val();
-        const st = document.getElementById("chatStatus");
-        st.innerText = u?.online ? "online" : "offline";
-        st.style.color = u?.online ? "var(--online)" : "var(--text-muted)";
+        grid.appendChild(el);
     });
 }
 
@@ -799,100 +1546,44 @@ function updatePartnerOnlineStatus() {
     CONTACTS & LIST
     ========================================= */
 function loadContacts() {
-    // 1. MATIKAN LISTENER LAMA AGAR TIDAK DOBEL
-    if (contactsListener) {
-        db.ref(`user_chats/${currentUser}`).off('value', contactsListener);
-    }
-
-    // 2. Buat Listener Baru
-    contactsListener = db.ref(`user_chats/${currentUser}`).on("value", snap => {
+    if (contactsListener) { db.ref(`user_chats/${currentUser}`).off('value', contactsListener); }
+    
+    contactsListener = db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
+        const list = document.getElementById("users");
+        list.innerHTML = ""; 
         
-        // Ambil data pinned_chats terlebih dahulu
-        db.ref(`user_settings/${currentUser}/pinned_chats`).once("value", pinnedSnap => {
-            const pinnedIds = pinnedSnap.val() || {};
-            const list = document.getElementById("users");
-            
-            // Hanya render jika ada data atau jika list kosong (opsional, tapi membersihkan list di sini aman)
-            // Kita bersihkan list sebelum render ulang
-            list.innerHTML = ""; 
-            
-            let items = [];
-            
-            snap.forEach(c => { 
-                // Cek apakah ada chat
-                const info = c.val();
-                if(!info) return;
+        let items = [];
+        snap.forEach(c => { 
+            const info = c.val();
+            if(!info) return;
+            items.push({ id: c.key, info: info }); 
+        });
 
-                items.push({ 
-                    id: c.key, 
-                    info: info, 
-                    isPinned: !!pinnedIds[c.key] 
-                }); 
-            });
+        // Sorting
+        items.sort((a, b) => b.info.time - a.info.time);
 
-            // LOGIKA URUTAN: Pinned di atas, sisanya berdasarkan waktu terbaru
-            items.sort((a, b) => {
-                if (a.isPinned && !b.isPinned) return -1;
-                if (!a.isPinned && b.isPinned) return 1;
-                return b.info.time - a.info.time;
-            });
-
-            // Render ke HTML
-            items.forEach(item => {
-                const isGrp = item.id.startsWith("GROUP_");
-                const refPath = isGrp ? "groups/" + item.id : "users/" + item.id;
+        // Render
+        items.forEach(item => {
+            const isGrp = item.id.startsWith("GROUP_");
+            const refPath = isGrp ? "groups/" + item.id : "users/" + item.id;
+            
+            db.ref(refPath).once("value", uSnap => {
+                const u = uSnap.val();
+                let div = document.createElement("div");
+                div.id = `contact-${item.id}`; 
+                div.className = `user`;
+                div.onclick = (e) => { if (e.target.tagName !== 'IMG') openChat(item.id, u?.photo || '', u?.name || u?.username || item.id, isGrp); };
                 
-                db.ref(refPath).once("value", uSnap => {
-                    // Cek elemen sudah ada atau belum untuk mencegah render ganda
-                    const existingEl = document.getElementById(`contact-${item.id}`);
-                    if(existingEl) return; 
-
-                    const u = uSnap.val();
-                    const chatId = isGrp ? item.id : [currentUser, item.id].sort().join("_");
-                    
-                    // Listener Unread Count (Opsional: matikan juga listener lama jika perlu, 
-                    // tapi biasanya ini aman karena attached ke element yang baru)
-                    db.ref("chats/" + chatId).orderByChild("seen").equalTo(false).on("value", unreadSnap => {
-                        let count = 0;
-                        unreadSnap.forEach(m => { if(m.val().from !== currentUser) count++; });
-
-                        // Cek lagi elemen, bisa saja dihapus antara proses
-                        const currentEl = document.getElementById(`contact-${item.id}`);
-                        if(!currentEl) return;
-
-                        // Update badge jika ada
-                        let badgeEl = currentEl.querySelector('.unread-badge');
-                        if(count > 0) {
-                            if(!badgeEl) {
-                                badgeEl = document.createElement("div");
-                                badgeEl.className = "unread-badge";
-                                currentEl.appendChild(badgeEl);
-                            }
-                            badgeEl.innerText = count;
-                        } else {
-                            if(badgeEl) badgeEl.remove();
-                        }
-                    });
-
-                    let div = document.createElement("div");
-                    div.id = `contact-${item.id}`; // ID Unik untuk setiap kontak
-                    div.className = `user ${item.isPinned ? 'pinned' : ''}`;
-                    
-                    const pinIcon = item.isPinned ? '<i class="fa fa-thumbtack" style="color:var(--accent); font-size:12px; margin-left:5px;"></i>' : '';
-
-                    div.innerHTML = `
-                        <img src="${u?.photo || (isGrp ? 'https://cdn-icons-png.flaticon.com/512/615/615075.png' : 'https://cdn-icons-png.flaticon.com/512/149/149071.png')}" 
-                             onclick="event.stopPropagation(); goToTargetProfile('${item.id}', ${isGrp})">
-                        <div class="user-info" onclick="openChat('${item.id}', '${u?.photo}', '${u?.name || u?.username}', ${isGrp})">
-                            <b>${u?.name || u?.username || item.id} ${pinIcon}</b>
-                            <span>${item.info.lastMsg || '...'}</span>
-                        </div>
-                        <!-- Badge placeholder -->
-                    `;
-
-                    setupHoldListener(div, item.id);
-                    list.appendChild(div);
-                });
+                div.innerHTML = `
+                    <img src="${u?.photo || (isGrp ? 'https://cdn-icons-png.flaticon.com/512/615/615075.png' : 'https://cdn-icons-png.flaticon.com/512/149/149071.png')}" 
+                         style="width:52px; height:52px; border-radius:16px; object-fit:cover;">
+                    <div class="user-info">
+                        <b>${u?.name || u?.username || item.id}</b>
+                        <span>${item.info.lastMsg || '...'}</span>
+                    </div>
+                `;
+                setupHoldListener(div, item.id);
+                list.appendChild(div);
             });
         });
     });
@@ -902,17 +1593,16 @@ function loadContacts() {
     MESSAGING CORE
     ========================================= */
 function openChat(pId, photo, name, grp = false) {
-    if (activeChatRef) {
-        activeChatRef.off();
-        console.log("Koneksi chat lama diputus.");
-    }
-
+    if (activeChatRef) { activeChatRef.off(); }
     currentPartnerId = pId;
     isGroup = grp;
     currentChatId = grp ? pId : [currentUser, pId].sort().join("_");
+    activeChatRef = db.ref("chats/" + currentChatId).limitToLast(50);
     
-    activeChatRef = db.ref("chats/" + currentChatId);
-
+    // Reset Flag View Once
+    viewOnceIgnoredKey = null; 
+    selectedMsgId = null; selectedMsgData = null;
+    
     document.getElementById("emojiPanel").style.display = "none";
     if (window.innerWidth <= 768) document.getElementById("sidebar").classList.add("hidden");
     document.getElementById("welcome-screen").style.display = "none";
@@ -929,212 +1619,366 @@ function openChat(pId, photo, name, grp = false) {
     activeChatRef.on("child_added", snap => {
         renderMessage(snap.val(), snap.key);
         msgsDiv.scrollTop = msgsDiv.scrollHeight;
-        
-        if(snap.val().from !== currentUser && !snap.val().seen) {
-            db.ref("chats/" + currentChatId + "/" + snap.key).update({ seen: true });
-        }
+        if(snap.val().from !== currentUser && !snap.val().seen) { db.ref("chats/" + currentChatId + "/" + snap.key).update({ seen: true }); }
     });
 
     activeChatRef.on("child_changed", snap => {
-        const oldMsg = document.getElementById("msg-wrap-" + snap.key);
-        if(oldMsg) {
-            oldMsg.remove();
-            renderMessage(snap.val(), snap.key);
+        const key = snap.key;
+        // Jika key ini viewOnceIgnoreKey, maka jangan re-render (agar UI tidak hilang)
+        if (key === viewOnceIgnoredKey) {
+            viewOnceIgnoredKey = null;
+            return; 
         }
+        const oldMsg = document.getElementById("msg-wrap-" + key);
+        if(oldMsg) { oldMsg.remove(); renderMessage(snap.val(), key); }
     });
 
     db.ref(`typing/${currentChatId}`).off();
     watchTyping(currentChatId);
-
-    if(!grp) {
-        updatePartnerOnlineStatus();
-    } else { 
-        document.getElementById("chatStatus").innerText = "Grup Chat"; 
-        document.getElementById("chatStatus").style.color = "var(--text-muted)";
-        isEditing = false;
-        cancelReply();
-        db.ref("group_members/" + pId).once("value", snap => {
-            groupMembersCount[pId] = snap.numChildren();
-        });
-    }
+    if(!grp) { updatePartnerOnlineStatus(); } else { document.getElementById("chatStatus").innerText = "Grup Chat"; document.getElementById("chatStatus").style.color = "var(--text-muted)"; isEditing = false; cancelReply(); }
 }
 
 function renderMessage(m, key) {
     if (document.getElementById("msg-wrap-" + key)) return;
-
     const isMe = m.from === currentUser;
     const wrap = document.createElement("div");
     wrap.className = `msg-wrap ${isMe ? 'me' : 'you'}`;
     wrap.id = "msg-wrap-" + key;
     
-    // --- VARIABEL UNTUK FIX IPHONE (TOUCH LOGIC) ---
+    // Touch Logic
     let touchStartX, touchStartY, touchTimer;
-    
-    // 1. Support Right Click (Desktop & Android)
-    wrap.oncontextmenu = (e) => {
-        e.preventDefault();
-        if (typeof openContextMenu === "function") {
-            openContextMenu(e, key, m);
-        }
-    };
-
-    // 2. Support Long Press Khusus iPhone/iOS
+    wrap.oncontextmenu = (e) => { e.preventDefault(); openContextMenu(e, key, m); };
     wrap.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-
-        // Bersihkan timer lama jika ada
+        const touch = e.touches[0]; touchStartX = touch.clientX; touchStartY = touch.clientY;
         if (touchTimer) clearTimeout(touchTimer);
-
-        // Set timer 600ms untuk memicu menu
-        touchTimer = setTimeout(() => {
-            if (typeof openContextMenu === "function") {
-                // Kita kirim object event palsu berisi koordinat awal sentuhan
-                openContextMenu({
-                    clientX: touchStartX,
-                    clientY: touchStartY,
-                    preventDefault: () => {}
-                }, key, m);
-            }
-        }, 600);
+        touchTimer = setTimeout(() => { openContextMenu({ clientX: touchStartX, clientY: touchStartY, preventDefault: () => {} }, key, m); }, 600);
     }, { passive: false });
-
-    // 3. Batalkan menu jika jari digeser (agar tidak muncul saat scroll)
     wrap.addEventListener('touchmove', (e) => {
         if (!touchTimer) return;
-        
         const touch = e.touches[0];
-        const moveX = Math.abs(touch.clientX - touchStartX);
-        const moveY = Math.abs(touch.clientY - touchStartY);
-
-        // Jika gerakan lebih dari 10px, anggap sedang scroll, batalkan menu
-        if (moveX > 10 || moveY > 10) {
-            clearTimeout(touchTimer);
-            touchTimer = null;
-        }
+        if (Math.abs(touch.clientX - touchStartX) > 10 || Math.abs(touch.clientY - touchStartY) > 10) { clearTimeout(touchTimer); touchTimer = null; }
     }, { passive: false });
+    wrap.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
 
-    // 4. Bersihkan timer saat jari dilepas
-    wrap.addEventListener('touchend', () => {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-    });
-    // ----------------------------------------------
-
-    let forwardHtml = m.forwarded ? `<div class="forward-tag" style="font-size:10px; opacity:0.6; margin-bottom:2px;"><i class="fa fa-share"></i> Diteruskan</div>` : "";
-
-    let replyHtml = "";
-    if (m.replyTo) {
-        replyHtml = `
-            <div class="reply-box-in-msg" 
-                 onclick="scrollToMessage('${m.replyTo.id}')" 
-                 style="background: rgba(0,0,0,0.1); border-left: 3px solid var(--accent); padding: 5px; margin-bottom: 5px; border-radius: 4px; cursor: pointer;">
-                <b style="color:var(--accent); font-size:11px;">${m.replyTo.user === currentUser ? "Anda" : m.replyTo.user}</b>
-                <div style="font-size:11px; opacity:0.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                    ${decryptData(m.replyTo.text)}
-                </div>
-            </div>`;
-    }
-
+    // Body Message
     let content = "";
     if (m.deleted) {
-        content = `<div class="msg deleted" style="font-style:italic; opacity:0.7;">🚫 Pesan telah dihapus</div>`;
+        content = `<div class="msg deleted">🚫 Pesan telah dihapus</div>`;
     } else {
         let textBody = "";
         try {
             if (m.text.startsWith("IMG:")) {
-                const url = decryptData(m.text.replace("IMG:", ""));
-                textBody = `<img src="${url}" onclick="window.open('${url}')" style="max-width:100%; border-radius:10px; cursor:pointer;">`;
+                let url = "";
+                try { url = decryptData(m.text.replace("IMG:", "")); } catch(e) { url = null; }
+                // VIEW ONCE LOGIC
+                if (m.viewOnce) {
+                    textBody = `
+                        <div class="view-once-blur" onclick="openViewOnceMessage('${key}')">
+                            <img src="${url}" style="width:100%; display:block; filter:blur(25px);">
+                            <div class="view-once-overlay">
+                                <i class="fas fa-eye" style="font-size:30px;"></i>
+                                <div style="font-size:12px;">Klik untuk melihat</div>
+                            </div>
+                        </div>`;
+                } else {
+                    textBody = `<img src="${url}" onclick="openLightbox('${url}')" style="max-width:100%; border-radius:10px; cursor:pointer;">`;
+                }
             } 
             else if (m.text.startsWith("TYPE:VN:")) {
                 const url = decryptData(m.text.replace("TYPE:VN:", ""));
-                textBody = `
-                    <div class="vn-container" style="display:flex; align-items:center; gap:8px; padding:5px 0;">
-                        <audio src="${url}" controls class="vn-player" style="max-width:200px; height:30px;"></audio>
-                    </div>`;
+                textBody = `<div class="vn-container" style="display:flex; align-items:center; gap:8px; padding:5px 0;"><audio src="${url}" controls class="vn-player" style="max-width:200px; height:30px;"></audio></div>`;
             } 
             else if (m.text.startsWith("CALL_JITSI:")) {
                 const p = m.text.split(":");
-                textBody = `<div class="call-msg" style="cursor:pointer; text-align:center;" onclick="window.open('https://meet.jit.si/${p[2]}')"><i class="fa fa-video"></i><br><small>Panggilan Masuk</small></div>`;
-            } else {
+                textBody = `<div class="call-msg" onclick="joinVideoCall('${p[2]}', '${p[1]}')"><i class="fas fa-video"></i><br><small>Panggilan Masuk (Klik Gabung)</small></div>`;
+            }
+            else {
                 textBody = `<span>${decryptData(m.text)}</span>`;
             }
-        } catch (e) {
-            textBody = `<span style="color:red; font-size:10px;">Gagal mendekripsi pesan</span>`;
-        }
+        } catch (e) { textBody = `<span style="color:red; font-size:10px;">Gagal dekripsi</span>`; }
 
         const editedLabel = m.edited ? `<small style="opacity:0.5; font-size:9px; margin-left:5px;">(diedit)</small>` : "";
 
-        content = `
-            <div class="msg">
-                ${forwardHtml}
-                ${replyHtml}
-                ${textBody}
-                ${editedLabel}
-            </div>`;
+        content = `<div class="msg">${textBody}${editedLabel}</div>`;
     }
 
+    // Footer (Time & Ticks)
     const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let statusIcons = "";
-
     if (isMe && !m.deleted) {
-        if (typeof isGroup !== 'undefined' && isGroup) {
+        if (isGroup) {
             const seenByCount = m.seenBy ? Object.keys(m.seenBy).length : 0;
-            const totalMembers = typeof groupMembersCount !== 'undefined' ? groupMembersCount[currentChatId] || 2 : 2; 
-
-            if (seenByCount >= totalMembers) {
-                statusIcons = `<span style="color:var(--accent); font-weight:bold;">✓✓</span>`;
-            } else if (seenByCount > 1) {
-                statusIcons = `✓✓`;
-            } else {
-                statusIcons = `✓`;
-            }
+            const totalMembers = groupMembersCount[currentChatId] || 2;
+            statusIcons = seenByCount >= totalMembers ? `<span style="color:var(--accent); font-weight:bold;">✓✓</span>` : `✓`;
         } else {
             statusIcons = m.seen ? `<span style="color:var(--accent); font-weight:bold;">✓✓</span>` : `✓`;
         }
     }
     
-    const senderName = (typeof isGroup !== 'undefined' && isGroup && !isMe && !m.deleted) ? `<div style="font-size:10px; font-weight:bold; color:var(--accent); margin-bottom:2px;">${m.from}</div>` : "";
-
-    wrap.innerHTML = `
-        ${senderName}
-        ${content}
-        <div class="msg-meta" style="display:flex; align-items:center; gap:4px; justify-content:flex-end; font-size:10px; opacity:0.7; margin-top:2px;">
-            ${time} ${statusIcons}
-        </div>
-    `;
-
-    const msgsDiv = document.getElementById("msgs");
+    const senderName = (isGroup && !isMe && !m.deleted) ? `<div style="font-size:10px; font-weight:bold; color:var(--accent); margin-bottom:2px;">${m.from}</div>` : "";
+    
+    wrap.innerHTML = `${senderName}${content}<div class="msg-meta" style="display:flex; align-items:center; gap:4px; justify-content:flex-end; font-size:10px; opacity:0.7; margin-top:2px;">${time} ${statusIcons}</div>`;
+    
     msgsDiv.appendChild(wrap);
     msgsDiv.scrollTop = msgsDiv.scrollHeight; 
 
-    if (!isMe && typeof currentChatId !== 'undefined' && currentChatId) {
-        if (typeof isGroup !== 'undefined' && isGroup) {
-            if (!m.seenBy || !m.seenBy[currentUser]) {
-                db.ref(`chats/${currentChatId}/${key}/seenBy/${currentUser}`).set(true);
-            }
+    // Logic Seen (Group vs Personal)
+    if (!isMe && currentChatId) {
+        if (isGroup) {
+            if (!m.seenBy || !m.seenBy[currentUser]) db.ref(`chats/${currentChatId}/${m.key}/seenBy/${currentUser}`).set(true);
         } else {
-            if (!m.seen) {
-                db.ref(`chats/${currentChatId}/${key}`).update({ seen: true });
-            }
+            if (!m.seen) db.ref("chats/" + currentChatId + "/" + m.key).update({ seen: true });
         }
     }
 }
-function handleDelete() {
-    document.getElementById("msgMenu").style.display = "none";
-    const now = Date.now();
-    const isMe = selectedMsgData.from === currentUser;
-    const canDeleteEveryone = isMe && (now - selectedMsgData.time < 172800000);
 
-    const sheet = document.getElementById("deleteSheet");
-    const btnEveryone = document.getElementById("btnDeleteEveryone");
-
-    btnEveryone.style.display = canDeleteEveryone ? "block" : "none";
+/* =========================================
+    SEND FUNCTIONS
+    ========================================= */
+async function send() {
+    const val = textInput.value.trim();
+    if (!currentChatId) return; 
     
-    sheet.style.display = "flex";
+    if (pendingImageBase64) {
+        const msgObj = { from: currentUser, text: "IMG:" + encryptData(pendingImageBase64), time: Date.now(), seenBy: { [currentUser]: true } };
+        if (isViewOnceEnabled) msgObj.viewOnce = true;
+        if (replyData) msgObj.replyTo = replyData;
+        db.ref("chats/" + currentChatId).push(msgObj).then(() => { showToast("Gambar terkirim!"); closeSendImagePreview(); });
+        return;
+    }
+
+    if (vnBlob) {
+        showToast("Mengirim VN...");
+        const reader = new FileReader();
+        reader.readAsDataURL(vnBlob);
+        reader.onloadend = function() {
+            const encryptedVN = "TYPE:VN:" + encryptData(reader.result);
+            const msgObj = { from: currentUser, text: encryptedVN, time: Date.now(), seenBy: { [currentUser]: true } };
+            if (replyData) msgObj.replyTo = replyData;
+            db.ref("chats/" + currentChatId).push(msgObj);
+            updateSummary("🎤 VN Terkirim!");
+            vnBlob = null; textInput.value = "";
+            cancelReply();
+        };
+        return;
+    }
+
+    // Edit
+    if (isEditing) {
+        if (!val) return;
+        db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({
+            text: encryptData(val),
+            edited: true
+        }).then(() => {
+            isEditing = false; textInput.value = "";
+            showToast("Pesan diperbarui");
+        });
+    } 
+    else {
+        if (!val) return;
+        const msgObj = {
+            from: currentUser, text: encryptData(val), time: Date.now(), seenBy: { [currentUser]: true } 
+            msgObj.seen = false;
+            if (replyData) msgObj.replyTo = replyData;
+            db.ref("chats/" + currentChatId).push(msgObj).then(() => { textInput.value = ""; updateSummary(val); cancelReply(); });
+    }
+    db.ref(`typing/${currentChatId}/${currentUser}`).remove();
 }
 
+/* =========================================
+    NOTIFICATION SYSTEM (INTEGRASI)
+    ========================================= */
+function playNotificationSound(type = 'message') {
+    const soundId = (type === 'ringtone') ? "ringtoneSound" : "notificationSound";
+    const sound = document.getElementById(soundId);
+    if (sound) {
+        sound.currentTime = 0;
+        if (type === 'ringtone') sound.loop = true;
+        else sound.loop = false;
+        const playPromise = sound.play();
+        if (playPromise !== undefined) { playPromise.then(() => console.log("Suara " + type + " diputar")).catch(e => {}); }
+    }
+}
+
+function showAppToast(title, body, photo, chatId) {
+    const container = document.getElementById("custom-toast-container");
+    const card = document.createElement("div");
+    card.id = "custom-toast-card";
+    card.onclick = () => {
+        const isGrp = chatId.startsWith("GROUP_");
+        const refPath = isGrp ? "groups/" + chatId : "users/" + chatId;
+        db.ref(refPath).once("value", uSnap => {
+            const u = uSnap.val();
+            openChat(chatId, u?.photo || '', u?.name || u?.username || chatId, isGrp);
+            hideAppToast();
+        });
+    };
+    
+    card.innerHTML = `<img src="${photo}" class="toast-avatar"><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-body">${body}</div></div>`;
+    
+    container.innerHTML = "";
+    container.appendChild(card);
+    playNotificationSound('message');
+    container.style.top = "0px";
+    setTimeout(() => hideAppToast(), 5000);
+}
+
+function showBrowserNotification(title, body, icon, tag) {
+    const blackPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII";
+    const badgeUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    
+    const options = {
+        body: body, icon: icon, badge: badgeUrl, image: blackPixel,
+        vibrate: [200, 100, 200], tag: tag,
+        requireInteraction: true
+    };
+
+    if (Notification.permission === "granted") {
+        const finalTitle = title;
+        try {
+            const notif = new Notification(finalTitle, options);
+            notif.onclick = () => { window.focus(); notif.close(); };
+        } catch(e) { }
+    }
+}
+
+function setupGlobalNotificationListener() {
+    if (typeof firebase === 'undefined' || typeof db === 'undefined') return;
+    if (globalNotifListener) { db.ref(`user_chats/${currentUser}`).off('value', globalNotifListener); }
+
+    globalNotifListener = db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
+        snap.forEach((child) => {
+            const chatId = child.key.startsWith("GROUP_") ? child.key : [currentUser, child.key].sort().join("_");
+            db.ref(`chats/${chatId}`).limitToLast(20).on("child_added", (msgSnap) => {
+                const m = msgSnap.val();
+                if (!m || !m.text) return;
+                const isRecent = msg.time > (Date.now() - 20000);
+                if (m.from !== currentUser && !m.seen && currentChatId !== chatId) {
+                    let notifTitle = child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman");
+                    let notifBody = "";
+                    let soundType = 'message';
+                    
+                    if (m.text.startsWith("CALL_JITSI:")) {
+                        const p = m.text.split(":");
+                        const callType = p[1]; const roomName = p[2];
+                        notifBody = (callType === 'audio') ? "📞 Panggilan Suara..." : "📹 Panggilan Video...";
+                        showCallOverlay(roomName, callType, notifTitle, u?.photo);
+                    } 
+                    else if (m.text.startsWith("IMG:")) { notifBody = "📷 Mengirim Gambar..."; } 
+                    else if (m.text.startsWith("TYPE:VN:")) { notifBody = "🎤 Mengirim Voice Note..."; }
+                    else { try { notifBody = decryptData(m.text); } catch(e) { notifBody = "Pesan baru"; } }
+                    
+                    playNotificationSound(soundType);
+                    if (document.visibilityState === 'visible') showAppToast(notifTitle, notifBody, u?.photo, child.key);
+                    showBrowserNotification(notifTitle, notifBody, u?.photo, `chat_${chatId}`);
+                }
+            });
+        });
+    });
+}
+
+function openChat(pId, photo, name, grp = false) {
+    if (activeChatRef) { activeChatRef.off(); }
+    currentPartnerId = pId;
+    isGroup = grp;
+    currentChatId = grp ? pId : [currentUser, pId].sort().join("_");
+    activeChatRef = db.ref("chats/" + currentChatId).limitToLast(50);
+
+    // Reset Flags
+    viewOnceIgnoredKey = null; 
+    selectedMsgId = null; 
+    selectedMsgData = null;
+    
+    document.getElementById("emojiPanel").style.display = "none";
+    if (window.innerWidth <= 768) document.getElementById("sidebar").classList.add("hidden");
+    document.getElementById("welcome-screen").style.display = "none";
+    document.getElementById("chat-header-area").style.display = "flex";
+    document.getElementById("msgs").style.display = "flex";
+    document.getElementById("inputArea").style.display = "block";
+
+    document.getElementById("chatName").innerText = name;
+    document.getElementById("chatAvatar").src = photo || (grp ? "https://cdn-icons-png.flaticon.com/512/615/615075.png" : "https://cdn-icons-png.flaticon.com/512/149/149071.png");
+
+    const msgsDiv = document.getElementById("msgs");
+    msgsDiv.innerHTML = "";
+
+    activeChatRef.on("child_added", snap => {
+        renderMessage(snap.val(), snap.key);
+        msgsDiv.scrollTop = msgsDiv.scrollHeight;
+        if(snap.val().from !== currentUser && !snap.val().seen) { db.ref("chats/" + currentChatId + "/" + snap.key).update({ seen: true }); }
+    });
+
+    activeChatRef.on("child_changed", snap => {
+        const key = snap.key;
+        if (key === viewOnceIgnoredKey) { viewOnceIgnoredKey = null; return; }
+        const oldMsg = document.getElementById("msg-wrap-" + key);
+        if(oldMsg) { oldMsg.remove(); renderMessage(snap.val(), key); }
+    });
+
+    watchTyping(currentChatId);
+    if(!grp) { updatePartnerOnlineStatus(); } 
+    else { 
+        document.getElementById("chatStatus").innerText = "Grup Chat"; document.getElementById("chatStatus").style.color = "var(--text-muted)"; 
+        isEditing = false; cancelReply();
+        db.ref("group_members/" + pId).once("value", snap => { groupMembersCount[pId] = snap.numChildren(); });
+    }
+}
+
+/* =========================================
+    CONTEXT MENU & ACTIONS
+    ========================================= */
+function openContextMenu(e, key, data) {
+    if(data.deleted) return;
+    selectedMsgId = key;
+    selectedMsgData = data;
+    const menu = document.getElementById("msgMenu");
+    menu.style.display = "block";
+    let top = e.clientY; let left = e.clientX;
+    if (top > window.innerHeight - 200) top -= 200;
+    if (left > window.innerWidth - 180) left -= 180;
+    menu.style.top = top + "px"; menu.style.left = left + "px";
+
+    const now = Date.now();
+    const canEdit = (now - data.time < 3600000) && (data.from === currentUser);
+    document.getElementById("menu-edit").style.display = canEdit ? "flex" : "none";
+
+    setTimeout(() => {
+        document.onclick = () => { menu.style.display = "none"; document.onclick = null; };
+    }, 100);
+}
+function handleReply() {
+    document.getElementById("msgMenu").style.display = "none";
+    if (!selectedMsgData) return;
+    replyData = { id: selectedMsgId, user: selectedMsgData.from, text: selectedMsgData.text };
+    document.getElementById("reply-preview").style.display = "block";
+    document.getElementById("reply-user").innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
+    document.getElementById("reply-text").innerText = decryptData(replyData.text);
+    document.getElementById("text").focus();
+}
+function scrollToMessage(msgId) {
+    const targetEl = document.getElementById("msg-wrap-" + msgId);
+    if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetEl.style.transition = "background 0.5s";
+        setTimeout(() => { targetEl.style.backgroundColor = "transparent"; }, 1500);
+    } else { showToast("Pesan asli sudah lama/hapus"); }
+}
+function cancelReply() { replyData = null; document.getElementById("reply-preview").style.display = "none"; }
+function handleEdit() {
+    isEditing = true;
+    document.getElementById("text").value = decryptData(selectedMsgData.text);
+    document.getElementById("text").focus();
+    showToast("Mode Edit Aktif");
+}
+function handleDelete() {
+    document.getElementById("msgMenu").style.display = "none"; 
+    const now = Date.now();
+    const isMe = selectedMsgData.from === currentUser; 
+    const canDeleteEveryone = isMe && (now - selectedMsgData.time < 172800000);
+    const sheet = document.getElementById("deleteSheet");
+    document.getElementById("btnDeleteEveryone").style.display = canDeleteEveryone ? "block" : "none";
+    sheet.style.display = "flex";
+}
 function confirmDeleteEveryone() {
     db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({
         deleted: true,
@@ -1145,128 +1989,32 @@ function confirmDeleteEveryone() {
     closeDeleteSheet();
     showToast("Dihapus untuk semua orang");
 }
-
 function confirmDeleteMe() {
     const el = document.getElementById("msg-wrap-" + selectedMsgId);
     if(el) el.remove();
     closeDeleteSheet();
     showToast("Dihapus untuk Anda");
 }
-
 function closeDeleteSheet() { document.getElementById("deleteSheet").style.display = "none"; }
+
+function handleCopy() { 
+    const txt = decryptData(selectedMsgData.text); 
+    navigator.clipboard.writeText(txt);
+    showToast("Disalin!");
+}
+
 /* =========================================
-    SEND FUNCTIONS
+    FORWARDING LOGIC
     ========================================= */
-async function send() {
-    const textInput = document.getElementById("text");
-    if (!textInput || !currentChatId) return; 
-    
-    const val = textInput.value.trim();
-
-    if (typeof vnBlob !== 'undefined' && vnBlob) {
-        showToast("Mengirim Voice Note...");
-        const reader = new FileReader();
-        reader.readAsDataURL(vnBlob);
-        reader.onloadend = function() {
-            const encryptedVN = "TYPE:VN:" + encryptData(reader.result);
-            const msgObj = {
-                from: currentUser,
-                text: encryptedVN,
-                time: Date.now(),
-                seenBy: { [currentUser]: true } 
-            };
-            
-            if (typeof replyData !== 'undefined' && replyData) msgObj.replyTo = replyData;
-            
-            db.ref("chats/" + currentChatId).push(msgObj);
-            updateSummary("🎵 Voice Note");
-            
-            vnBlob = null;
-            textInput.value = "";
-            textInput.readOnly = false;
-            cancelReply();
-        };
-        return;
-    }
-
-    if (typeof isEditing !== 'undefined' && isEditing) {
-        if (!val) return;
-        db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({
-            text: encryptData(val),
-            edited: true
-        }).then(() => {
-            isEditing = false;
-            textInput.value = "";
-            showToast("Pesan diperbarui");
-        });
-    } 
-    
-    else {
-        if (!val) return;
-        const msgObj = {
-            from: currentUser,
-            text: encryptData(val),
-            time: Date.now(),
-            seenBy: { [currentUser]: true } 
-        };
-        
-        msgObj.seen = false;
-        
-        if (typeof replyData !== 'undefined' && replyData) {
-            msgObj.replyTo = replyData;
-        }
-        
-        db.ref("chats/" + currentChatId).push(msgObj).then(() => {
-            textInput.value = "";
-            updateSummary(val);
-            cancelReply(); 
-        });
-    }
-
-    db.ref(`typing/${currentChatId}/${currentUser}`).remove();
-}
-// Fungsi untuk Membuka Menu Konteks
-function openContextMenu(e, key, data) {
-    if(data.deleted) return;
-    selectedMsgId = key;
-    selectedMsgData = data;
-    
-    const menu = document.getElementById("msgMenu");
-    menu.style.display = "block";
-    
-    let top = e.clientY;
-    let left = e.clientX;
-    if (top > window.innerHeight - 200) top -= 200;
-    if (left > window.innerWidth - 180) left -= 180;
-
-    menu.style.top = top + "px";
-    menu.style.left = left + "px";
-
-    const now = Date.now();
-    const canEdit = (now - data.time < 3600000) && (data.from === currentUser);
-    document.getElementById("menu-edit").style.display = canEdit ? "flex" : "none";
-
-    setTimeout(() => {
-        document.onclick = () => {
-            menu.style.display = "none";
-            document.onclick = null;
-        };
-    }, 100);
-}
 function handleForward() {
     document.getElementById("msgMenu").style.display = "none";
-
-    const targetId = prompt("Masukkan User ID atau Group ID tujuan:");
-    
+    const targetId = prompt("Masukkan User ID tujuan:");
     if (!targetId || targetId.trim() === "") return;
-
     executeForward(targetId.trim());
 }
-
 function executeForward(targetId) {
     const isGrp = targetId.startsWith("GROUP_");
     const targetChatId = isGrp ? targetId : [currentUser, targetId].sort().join("_");
-
     const forwardData = {
         from: currentUser,
         text: selectedMsgData.text, 
@@ -1274,116 +2022,298 @@ function executeForward(targetId) {
         seen: false,
         forwarded: true
     };
-
-    db.ref("chats/" + targetChatId).push(forwardData)
-        .then(() => {
-            showToast("Pesan berhasil diteruskan ke " + targetId);
-            
-            const summary = { lastMsg: "➡️ Pesan diteruskan", time: Date.now() };
-            db.ref(`user_chats/${currentUser}/${targetId}`).update(summary);
-            if(!isGrp) db.ref(`user_chats/${targetId}/${currentUser}`).update(summary);
-        })
-        .catch((err) => {
-            console.error(err);
-            showToast("Gagal meneruskan: ID tidak valid");
-        });
+    db.ref("chats/" + targetChatId).push(forwardData).then(() => {
+        showToast("Teruskan ke " + targetId);
+        updateSummary("➡️ Teruskan ke " + targetId);
+        if(!isGrp) db.ref(`user_chats/${targetId}/${currentUser}`).update(updateSummary);
+    });
 }
-
-function closeForwardModal() { document.getElementById("forwardModal").style.display = "none"; }
-
-function handleCopy() {
-    const txt = decryptData(selectedMsgData.text);
-    navigator.clipboard.writeText(txt);
-    showToast("Pesan disalin!");
-}
-
-function handleReply() {
-    document.getElementById("msgMenu").style.display = "none";
-    
-    if (!selectedMsgData) return;
-
-    replyData = {
-        id: selectedMsgId, 
-        user: selectedMsgData.from,
-        text: selectedMsgData.text 
-    };
-
-    document.getElementById("reply-preview").style.display = "block";
-    document.getElementById("reply-user").innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
-    document.getElementById("reply-text").innerText = decryptData(replyData.text);
-    
-    document.getElementById("text").focus();
-}
-
-function scrollToMessage(msgId) {
-    const targetEl = document.getElementById("msg-wrap-" + msgId);
-    if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        targetEl.style.transition = "background 0.5s";
-        targetEl.style.backgroundColor = "rgba(212, 163, 115, 0.4)";
-        
-        setTimeout(() => {
-            targetEl.style.backgroundColor = "transparent";
-        }, 1500);
-    } else {
-        showToast("Pesan asli sudah terlalu lama atau dihapus");
-    }
-}
-function cancelReply() {
-    replyData = null;
-    document.getElementById("reply-preview").style.display = "none";
-
-}
-function handleEdit() {
-    isEditing = true;
-    document.getElementById("text").value = decryptData(selectedMsgData.text);
-    document.getElementById("text").focus();
-    showToast("Mode Edit Aktif");
-
-}
-
-async function sendImage(input) {
-    if(!input.files[0]) return;
-    showToast("Mengompres Gambar...");
-    const reader = new FileReader();
-    reader.readAsDataURL(input.files[0]);
-    reader.onload = function(e) {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800;
-            const scale = MAX_WIDTH / img.width;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * scale;
-            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-            pushMsg("IMG:" + encryptData(canvas.toDataURL('image/jpeg', 0.7)));
-            updateSummary("📷 Gambar");
-        };
-    };
-}
-
-function startJitsi(type) {
-    const room = "GoChatPro_" + Math.random().toString(36).substring(7);
-    pushMsg(`CALL_JITSI:${type}:${room}`);
-    window.open(`https://meet.jit.si/${room}`, '_blank');
-}
+function handleCloseContextMenu() { if (contextMenu) contextMenu.style.display = 'none'; }
 
 /* =========================================
-    HELPERS
+    RECORDING LOGIC (FIXED SLIDE TO CANCEL & WAKELOCK)
     ========================================= */
-function encryptData(data) { return CryptoJS.AES.encrypt(data, SECRET_KEY).toString(); }
-function decryptData(cipher) { 
-    try { 
-        const bytes = CryptoJS.AES.decrypt(cipher, SECRET_KEY);
-        return bytes.toString(CryptoJS.enc.Utf8) || "[Pesan Terenkripsi]";
-    } catch(e) { return "[Pesan Terenkripsi]"; }
+async function handleStart(e) {
+    if (e.cancelable) e.preventDefault();
+    startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    isCancelled = false;
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
+        mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach(t => t.stop());
+            if (!isCancelled && audioChunks.length > 0) {
+                const vnBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                showToast("Mengirim VN...");
+                const formData = new FormData(); 
+                formData.append('file', vnBlob); 
+                formData.append('upload_preset', 'hanung'); 
+                formData.append('resource_type', 'video'); 
+                try {
+                    const response = await fetch('https://api.cloudinary.com/v1_1/dwu8dbfjp/video/upload', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.secure_url) {
+                        const encryptedURL = encryptData(data.secure_url);
+                        const finalMessage = "TYPE:VN:" + encryptedURL;
+                        db.ref("chats/" + currentChatId).push({ from: currentUser, text: finalMessage, time: Date.now() });
+                        showToast("VN Terkirim!");
+                    } else { showToast("Gagal upload VN."); }
+                } catch (error) { console.error(error); showToast("Error koneksi server."); }
+            }
+            toggleRecordingUI(false);
+        };
+
+        mediaRecorder.start();
+        toggleRecordingUI(true);
+        startTimer();
+    } 
+
+    async function handleStart(e) {
+        // Gunakan referensi variable global agar lebih bersih
+        // (Kode di atas menggunakan DOM variable di luar fungsi ini sudah didefinisikan)
+        if (e.cancelable) e.preventDefault();
+        startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        isCancelled = false;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = async () => {
+                stream.getTracks().forEach(t => t.stop());
+
+                if (!isCancelled && audioChunks.length > 0) {
+                    const vnBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    showToast("Mengirim VN...");
+                    const formData = new FormData();
+                    formData.append('file', vnBlob);
+                    formData.append('upload_preset', 'hanung'); 
+                    formData.append('resource_type', 'video'); 
+                    try {
+                        const response = await fetch('https://api.cloudinary.com/v1_1/dwu8dbfjp/video/upload', { method: 'POST', body: formData });
+                        const data = await response.json();
+                        if (data.secure_url) {
+                            const encryptedURL = encryptData(data.secure_url);
+                            const finalMessage = "TYPE:VN:" + encryptedURL;
+                            db.ref("chats/" + currentChatId).push({ from: currentUser, text: finalMessage, time: Date.now() });
+                            showToast("VN Terkirim!");
+                        } else { showToast("Gagal upload VN."); }
+                    } catch (error) { console.error(error); showToast("Error koneksi."); }
+                }
+                toggleRecordingUI(false);
+            };
+            
+            mediaRecorder.start();
+            toggleRecordingUI(true);
+            startTimer();
+        } catch (err) {
+        console.error(err);
+        toggleRecordingUI(false);
+    }
+
+    function toggleRecordingUI(isRecording) {
+        const normalInput = document.getElementById("normal-input");
+        const recordingUI = document.getElementById("recording-ui");
+        const sendButton = document.getElementById("sendButton");
+        const micButton = document.getElementById("micButton");
+
+        const isMobile = window.innerWidth <= 768;
+
+        if (isRecording) {
+            if (isMobile) {
+                if(normalInput) normalInput.style.display = 'none';
+                if(sendButton) sendButton.style.display = 'none';
+            } else {
+                if(normalInput) { normalInput.style.opacity = '0'; normalInput.style.pointerEvents = 'none'; if(sendButton) sendButton.style.display = 'none';
+            }
+            if(recordingUI) recordingUI.style.display = 'flex';
+            if(micButton) micBtn.style.color = '#ff5e5e';
+        } else {
+            clearInterval(recordInterval);
+            const timerDisplay = document.getElementById('record-timer');
+            if(timerDisplay) timerDisplay.innerText = "00:00";
+            
+            if (recordingUI) recordingUI.style.display = 'none';
+            if (isMobile) { if(normalInput) normalInput.style.display = 'flex'; if(sendButton) sendButton.style.display = 'flex'; }
+            else { if(normalInput) { normalInput.style.opacity = '1'; normalInput.style.pointerEvents = 'auto'; if(sendButton) sendButton.style.display = 'block'; }
+            if(micButton) micBtn.style.color = '';
+        }
+    }
+
+    function startTimer() {
+        let sec = 0, min = 0; const timerDisplay = document.getElementById('record-timer');
+        if (!timerDisplay) return;
+        if (recordInterval) clearInterval(recordInterval);
+        recordInterval = setInterval(() => {
+            sec++; if (sec == 60) { min++; sec = 0; } timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
+        }, 1000);
+    }
+
+    function handleMove(e) {
+        if (!mediaRecorder || mediaRecorder.state !== "recording") return;
+        let currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        let diffX = startX - currentX;
+        const instruction = document.getElementById('slide-instruction');
+        if (diffX > 60) {
+            isCancelled = true;
+            if(instruction) { 
+                instruction.innerHTML = "<i class='fas fa-trash'></i> Batalkan"; 
+                instruction.style.color = "#ff5e5e"; 
+            }
+        } else {
+            isCancelled = false;
+            if(instruction) { 
+                instruction.innerHTML = "<i class='fas fa-chevron-left'></i> Geser Batal"; 
+                instruction.style.color = "#888"; 
+            }
+        }
+    }
+
+    function handleStop() {
+        if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); } else { toggleRecordingUI(false); }
+    }
+    // Event Listeners Recording
+    if(micBtn) {
+        micBtn.addEventListener('mousedown', handleStart);
+        micBtn.addEventListener('touchstart', handleStart, {passive: false});
+        micBtn.addEventListener('touchmove', handleMove, {passive: false});
+        micBtn.addEventListener('touchend', handleStop);
+    }
+    window.addEventListener('mouseup', () => { if (mediaRecorder && mediaRecorder.state === "recording") handleStop(); });
+
+/* =========================================
+    NOTIFICATION LOGIC
+    ========================================= */
+function playNotificationSound(type = 'message') {
+    const soundId = (type === 'ringtone') ? "ringtoneSound" : "notificationSound";
+    const sound = document.getElementById(soundId);
+    if (sound) {
+        sound.currentTime = 0;
+        if (type === 'ringtone') sound.loop = true; else sound.loop = false;
+        const playPromise = sound.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => console.log("Sound OK")).catch(e => {});
+        }
+    }
 }
 
-function pushMsg(text) {
-    db.ref("chats/" + currentChatId).push({ from: currentUser, text: text, time: Date.now(), seen: false });
+// --- FUNGSI SETUP EMOJI (DI BAWAH) ---
+// Diganti logic 'document.addEventListener' di dalam setupEmoji() karena kita tidak ingin panel tertutup saat menekan emoji
+// Kita pakai listener spesifik di dalam panel untuk menutupnya secara manual
+const emojiPanel = document.getElementById("emojiPanel");
+const emojiPanelTabs = document.getElementById("emojiTabsContainer");
+const emojiGridContainer = document.getElementById("emojiGridContainer");
+const emojiButton = document.getElementById("emojiButton");
+
+if(emojiButton && emojiPanel) {
+    // Toggle panel saat tombol smile ditekan
+    emojiButton.addEventListener('click', (e) => {
+        if (emojiPanel.style.display === 'flex') {
+            emojiPanel.style.display = 'none';
+        } else {
+            emojiPanel.style.display = 'flex';
+            // Render default
+            renderEmojiTabs('Smileys');
+            renderEmojiGrid('Smileys');
+        }
+    });
 }
+
+// Listener Global Click untuk menutup panel
+document.addEventListener('click', (e) => {
+    // Jika klik BUKAN emojiPanel DAN bukan tombol emojiButton, jangan menutup panel
+    if (e.target.id !== 'emojiButton' && !e.target.closest('#emojiPanel')) {
+        if (emojiPanel.style.display === 'flex') emojiPanel.style.display = 'none';
+    }
+});
+
+function toggleEmojiPanel() {
+    // Logika sederhana agar menutup panel hanya memanggil tombol X atau klik tombol kiri
+    if (emojiPanel.style.display === 'flex') {
+        emojiPanel.style.display = 'none';
+    } else {
+        emojiPanel.style.display = 'flex';
+        // Reset kategori ke awal
+        renderEmojiTabs('Smileys');
+        renderEmojiGrid('Smileers');
+    }
+}
+
+    // Fungsi Tab (Render Tab Grid)
+    function renderEmojiGrid(cat) {
+        const emojis = emojiCategories[cat] || [];
+        emojiGrid.innerHTML = "";
+        
+        emojis.forEach(emojiChar => {
+            const el = document.createElement("div");
+            el.className = "emoji-item";
+            el.innerText = emojiChar;
+            
+            // --- LOGIKA STOPPROPAGATION (AGAR TETAP PANEL TIDAK OTOMATIS) ---
+            el.onclick = (e) => {
+                // Mencegah event naik ke parent container agar tidak tembus ke document
+                e.stopPropagation();
+                
+                // Masukkan Emoji
+                textInput.value += emojiChar;
+                
+                // Fokus Input
+                textInput.focus();
+                
+                // Opsional: Scroll ke elemen emoji (Opsional)
+                // elem.scrollIntoView({ block: 'center', behavior: 'instant', block: 'nearest' });
+            };
+            
+            grid.appendChild(el);
+        });
+        
+        // Auto scroll ke bawah
+        // grid.scrollTop = 0;
+    }
+
+// Fungsi Render Tab (Render Tab Navigasi)
+    function renderEmojiTabs(activeCat) {
+        const tabsContainer = document.getElementById('emojiTabsContainer');
+        const categories = Object.keys(emojiCategories);
+        
+        tabsContainer.innerHTML = "";
+        
+        categories.forEach(cat => {
+            const btn = document.createElement("div");
+            btn.className = `emoji-tab ${currentEmojiCategory === cat ? 'active' : ''}`;
+            btn.innerHTML = emojiIcons[cat] || cat.substring(0,1);
+            btn.onclick = () => renderEmojiGrid(cat);
+            btn.ontouchend = () => {
+                // Jika tab berakhir di-klik, panel tidak otomatis menutup (opsional)
+                // (Tinggal kelip di-klik akan memicang listener global yang kita matikan di function loadContacts)
+                // Jika diingink, panel tetap terbuka (toggleEmojiPanel)
+            };
+            
+            // Efek Visual Aktif
+            if(currentEmojiCategory === cat) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+function setupTypingListener() {
+    const input = document.getElementById("text");
+    input.addEventListener("input", () => {
+        if(!currentChatId) return;
+        const myDisplayName = document.getElementById("myName").innerText;
+        db.ref(`typing/${currentChatId}/${currentUser}`).set(myDisplayName);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => db.ref(`typing/${currentChatId}/${currentUser}`).remove(), 2000);
+    });
 
 function updateSummary(msg) {
     const s = { lastMsg: msg.length > 30 ? msg.substring(0,30) + "..." : msg, time: Date.now() };
@@ -1397,527 +2327,166 @@ function updateSummary(msg) {
     }
 }
 
-function setupEmoji() {
-    const panel = document.getElementById('emojiPanel');
-    const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','🥰','😘','😋','😛','😜','🧐','😎','🥳','😏','😒','😔','🥺','😢','😭','😤','😠','😡','🤯','😳','😴','😵','🤐','🤢','😈','💀','👻','👽','🤖','🙌','👏','👋','👍','👎','👊','✌️','👌','🙏','❤️','🔥','✨','🌟'];
-    panel.innerHTML = emojis.map(e => `<div class="emoji-item">${e}</div>`).join('');
-    document.getElementById('emojiButton').onclick = (e) => { e.stopPropagation(); panel.style.display = panel.style.display === 'grid' ? 'none' : 'grid'; };
-    panel.querySelectorAll('.emoji-item').forEach(el => el.onclick = () => { document.getElementById("text").value += el.innerText; });
-    document.addEventListener('click', () => panel.style.display = 'none');
-}
-
-function showToast(m) {
-    const t = document.getElementById("toast");
-    t.innerText = m; t.style.display = "block";
-    setTimeout(() => t.style.display = "none", 3000);
-}
-
-function closeChat() { document.getElementById("sidebar").classList.remove("hidden"); }
-function goToProfile() { window.location.href = isGroup ? `group-profile.html?id=${currentPartnerId}` : `user-profile.html?id=${currentPartnerId}`; }
-function goToTargetProfile(id, grp) { window.location.href = grp ? `group-profile.html?id=${id}` : `user-profile.html?id=${id}`; }
-
-function logout() { if(confirm("Keluar?")) { localStorage.clear(); window.location.href="index.html"; } }
-
-window.onload = initApp;
-document.getElementById("text").onkeydown = e => { if(e.key === "Enter") send(); };
-
+/* =========================================
+    NOTIFIKASI GLOBAL (INTI)
+    ========================================= */
 function setupGlobalNotificationListener() {
-    db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
+    if (typeof firebase === 'undefined' || typeof db === 'undefined') return;
+    if (globalNotifListener) { db.ref(`user_chats/${currentUser}`).off('value', globalNotifListener); }
+
+    globalNotifListener = db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
         snap.forEach((child) => {
-            const chatId = child.key.startsWith("GROUP_") 
-                ? child.key 
-                : [currentUser, child.key].sort().join("_");
-
-            db.ref(`chats/${chatId}`).limitToLast(1).off();
-            
-            db.ref(`chats/${chatId}`).limitToLast(1).on("child_added", (msgSnap) => {
-                const msg = msgSnap.val();
-                const isRecent = msg.time > (Date.now() - 10000);
-
-                if (msg.from !== currentUser && !msg.seen && currentChatId !== chatId && isRecent) {
-                    playNotificationSound('message');
+            const chatId = child.key.startsWith("GROUP_") ? child.key : [currentUser, child.key].sort().join("_");
+            db.ref(`chats/${chatId}`).limitToLast(20).on("child_added", (msgSnap) => {
+                const m = msgSnap.val();
+                const isRecent = msg.time > (Date.now() - 20000);
+                if (m.from !== currentUser && !m.seen && currentChatId !== chatId) {
+                    let notifTitle = child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman");
+                    let notifBody = "";
+                    let soundType = 'message';
                     
-                    const senderRef = child.key.startsWith("GROUP_") ? `groups/${child.key}` : `users/${msg.from}`;
-                    
-                    db.ref(senderRef).once("value", (userSnap) => {
-                        const data = userSnap.val();
-                        const senderName = data?.name || data?.username || msg.from;
-                        
-                        let messagePreview = "";
-                        if (msg.text.startsWith("IMG:")) {
-                            messagePreview = "📷 Mengirim Gambar";
-                        } else if (msg.text.startsWith("TYPE:VN:")) {
-                            messagePreview = "🎵 Voice Note";
-                        } else {
-                            messagePreview = decryptData(msg.text);
+                    if (m.text.startsWith("CALL_JITSI:")) {
+                        const p = m.text.split(":");
+                        const callType = p[1];
+                        const roomName = p[2];
+                        notifBody = (callType === 'audio') ? "📞 Panggilan Suara..." : "📹 Panggilan Video...";
+                        // Jika di layar, tampilkan overlay
+                        if (!document.getElementById('videoCallModal').style.display || document.getElementById('videoCallModal').style.display === 'block') {
+                            showCallOverlay(roomName, callType, notifTitle, u?.photo);
                         }
-                        
-                        showSystemNotification(senderName, messagePreview, child.key);
-                    });
+                        soundType = 'ringtone';
+                    } 
+                    else if (m.text.startsWith("IMG:")) { notifBody = "📷 Mengirim Gambar..."; } 
+                    else if (m.text.startsWith("TYPE:VN:")) { notifBody = "🎤 Mengirim Voice Note..."; }
+                    else { try { notifBody = decryptData(m.text); } catch(e) { notifBody = "Pesan baru"; } }
+                    
+                    playNotificationSound(soundType);
+                    if (document.visibilityState === 'visible') { showAppToast(notifTitle, notifBody, u?.photo, child.key); }
+                    showBrowserNotification(notifTitle, notifBody, u?.photo, `chat_${chatId}`);
                 }
             });
         });
     });
 }
-function playNotificationSound(type = 'message') {
-    const soundId = (type === 'ringtone') ? "ringtoneSound" : "notificationSound";
-    const sound = document.getElementById(soundId);
-    
-    if (sound) {
-        sound.currentTime = 0;
-        const playPromise = sound.play();
-        
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                console.log(`Suara ${type} diputar`);
-            }).catch(e => {
-                console.log("Autoplay diblokir. Klik layar sekali agar suara aktif.");
-            });
-        }
-    }
-}
-function showSystemNotification(sender, message, partnerId) {
-    showToast(`Pesan baru dari ${sender}`);
 
-    if (Notification.permission === "granted") {
-        const options = {
-            body: message,
-            icon: 'image/genre/20.png',
-            badge: 'image/genre/20.png',
-            vibrate: [200, 100, 200]
-        };
-
-        const notification = new Notification(sender, options);
-        
-        notification.onclick = function() {
-            window.focus();
-            this.close();
-        };
-    }
-}
-
-function pinChat(targetId) {
-    const pinRef = db.ref(`user_settings/${currentUser}/pinned_chats/${targetId}`);
-    
-    pinRef.once('value', (snapshot) => {
-        if (snapshot.exists()) {
-            pinRef.remove(); // Jika sudah di-pin, maka lepas (unpin)
-            showToast("Sematkan dilepas");
-            
-            // Refresh list agar style 'pinned' hilang
-            const list = document.getElementById("users");
-            if(list) list.innerHTML = "";
-            loadContacts(); 
-            
-        } else {
-            pinRef.set(true); // Jika belum, maka sematkan (pin)
-            showToast("Chat disematkan ke atas");
-            
-            // Refresh list agar style 'pinned' muncul
-            const list = document.getElementById("users");
-            if(list) list.innerHTML = "";
-            loadContacts();
-        }
-        closeContextMenu();
-    });
-}
-
-function deleteChat(targetId) {
-    if (confirm("Hapus percakapan ini dari daftar Anda?")) {
-        // 1. Hapus dari daftar chat aktif
-        db.ref(`user_chats/${currentUser}/${targetId}`).remove();
-        // 2. Hapus status pin jika ada
-        db.ref(`user_settings/${currentUser}/pinned_chats/${targetId}`).remove();
-        
-        showToast("Kontak dihapus dari daftar");
-        closeContextMenu();
-        
-        // 3. Refresh list agar chat hilang dari sidebar
-        const list = document.getElementById("users");
-        if(list) list.innerHTML = "";
-        loadContacts();
-        
-        // Opsional: Jika sedang membuka chat tersebut, tutup
-        if (currentChatId === targetId) {
-            document.getElementById("chat-header-area").style.display = "none";
-            document.getElementById("msgs").style.display = "none";
-            document.getElementById("inputArea").style.display = "none";
-            document.getElementById("welcome-screen").style.display = "flex";
-            // Tampilkan sidebar kembali jika di mobile
-            document.getElementById("sidebar").classList.remove("hidden");
-        }
-    }
-}
-
-function setupHoldListener(element, targetId) {
-    let internalHoldTimer;
-    let touchStartX, touchStartY; 
-
-    element.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        if (typeof showChatMenu === "function") {
-            showChatMenu(e.clientX, e.clientY, targetId);
-        }
-    });
-
-    element.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-
-        if (internalHoldTimer) clearTimeout(internalHoldTimer);
-
-        internalHoldTimer = setTimeout(() => {
-            if (navigator.vibrate) navigator.vibrate(50);
-            if (typeof showChatMenu === "function") {
-                showChatMenu(touchStartX, touchStartY, targetId);
-            }
-        }, 600); 
-    }, { passive: true });
-
-    element.addEventListener('touchmove', (e) => {
-        if (!internalHoldTimer) return;
-        
-        const touch = e.touches[0];
-        const moveX = Math.abs(touch.clientX - touchStartX);
-        const moveY = Math.abs(touch.clientY - touchStartY);
-
-        if (moveX > 10 || moveY > 10) {
-            clearTimeout(internalHoldTimer);
-            internalHoldTimer = null;
-        }
-    }, { passive: true });
-
-    element.addEventListener('touchend', () => {
-        clearTimeout(internalHoldTimer);
-        internalHoldTimer = null;
-    });
-
-    element.addEventListener('touchcancel', () => {
-        clearTimeout(internalHoldTimer);
-        internalHoldTimer = null;
-    });
-}
-
-function showChatMenu(x, y, targetId) {
-    let menu = document.getElementById('chat-context-menu');
-    
-    if (!menu) {
-        menu = document.createElement('div');
-        menu.id = 'chat-context-menu';
-        menu.style.position = 'fixed';
-        menu.style.zIndex = '10000';
-        menu.style.background = '#222';
-        menu.style.border = '1px solid #444';
-        menu.style.borderRadius = '8px';
-        menu.style.padding = '5px 0';
-        menu.style.minWidth = '150px'; // Diperlebar sedikit agar teks muat
-        menu.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
-        menu.style.color = 'white';
-        document.body.appendChild(menu);
-    }
-
-    // --- LOGIKA CEK STATUS PIN BARU ---
-    db.ref(`user_settings/${currentUser}/pinned_chats/${targetId}`).once('value', (snapshot) => {
-        const isPinned = snapshot.exists();
-        
-        // Tentukan Teks dan Ikon berdasarkan status
-        const pinText = isPinned ? "Lepas Sematan" : "Sematkan";
-        const pinIcon = isPinned ? "fa-thumbtack" : "fa-thumbtack"; // Bisa diganti fa-thumbtack yang lain jika mau
-        const pinColor = isPinned ? "#ff5e5e" : "white"; // Merah jika mau dilepas, Putih jika mau pasang
-
-        // Isi Menu
-        menu.innerHTML = `
-            <div onclick="pinChat('${targetId}')" style="padding: 10px 15px; cursor: pointer; color: ${pinColor};">
-                <i class="fas ${pinIcon}" style="margin-right:10px;"></i> ${pinText}
-            </div>
-            <div onclick="deleteChat('${targetId}')" style="padding: 10px 15px; cursor: pointer; color: #ff5e5e;">
-                <i class="fas fa-trash" style="margin-right:10px;"></i> Hapus Chat
-            </div>
-        `;
-
-        // Atur Posisi Menu
-        const menuWidth = 160;
-        const menuHeight = 100;
-        let finalX = x;
-        let finalY = y;
-
-        if (x + menuWidth > window.innerWidth) finalX = window.innerWidth - menuWidth - 10;
-        if (y + menuHeight > window.innerHeight) finalY = window.innerHeight - menuHeight - 10;
-
-        menu.style.left = finalX + 'px';
-        menu.style.top = finalY + 'px';
-        menu.style.display = 'block';
-
-        // Klik di mana saja untuk tutup menu
-        const closeMenu = () => {
-            menu.style.display = 'none';
-            document.removeEventListener('click', closeMenu);
-        };
-        setTimeout(() => document.addEventListener('click', closeMenu), 10);
-    });
-}
-
-function openMenu(x, y) {
-    const menu = document.getElementById('contextMenu');
-    const overlay = document.getElementById('menuOverlay');
-    
-    if (!menu) return;
-
-    menu.style.display = 'block';
-    overlay.style.display = 'block';
-
-    let posX = x;
-    let posY = y;
-    
-    if (x + 180 > window.innerWidth) posX = x - 180;
-    else posX = x + 10; 
-
-    if (y + 100 > window.innerHeight) posY = y - 100;
-
-    menu.style.left = posX + "px";
-    menu.style.top = posY + "px";
-}
-function closeContextMenu() {
-    if (contextMenu) contextMenu.style.display = 'none';
-    if (menuOverlay) menuOverlay.style.display = 'none';
-}
-
-if (contextMenu) {
-    contextMenu.onclick = (e) => e.stopPropagation();
-}
-
-function startTimer() {
-    let sec = 0, min = 0;
-    const timerDisplay = document.getElementById('record-timer');
-    if (!timerDisplay) return;
-    if (recordInterval) clearInterval(recordInterval);
-    recordInterval = setInterval(() => {
-        sec++;
-        if (sec == 60) { min++; sec = 0; }
-        timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-    }, 1000);
-}
-
-// --- 1. FUNGSI MULAI REKAM (FIX VISIBILITY) ---
+/* =========================================
+    RECORDERING UI (FIXED)
+    ========================================= */
 async function handleStart(e) {
     if (e.cancelable) e.preventDefault();
-
     startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
     isCancelled = false;
-
+    
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
-
-        mediaRecorder.ondataavailable = event => {
-            if (event.data.size > 0) audioChunks.push(event.data);
-        };
-
+        mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
         mediaRecorder.onstop = async () => {
             stream.getTracks().forEach(t => t.stop());
 
             if (!isCancelled && audioChunks.length > 0) {
                 const vnBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                showToast("Mengirim Voice Note...");
-
-                const formData = new FormData();
-                formData.append('file', vnBlob);
+                showToast("Mengirim VN...");
+                const formData = new FormData(); formData.append('file', vnBlob);
                 formData.append('upload_preset', 'hanung'); 
                 formData.append('resource_type', 'video'); 
-
                 try {
-                    const response = await fetch('https://api.cloudinary.com/v1_1/dwu8dbfjp/video/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
+                    const response = await fetch('https://api.cloudinary.com/v1_1/dwu8dbfjp/video/upload', { method: 'POST', body: formData });
                     const data = await response.json();
-                    
                     if (data.secure_url) {
                         const encryptedURL = encryptData(data.secure_url);
                         const finalMessage = "TYPE:VN:" + encryptedURL;
-                        db.ref("chats/" + currentChatId).push({
-                            from: currentUser,
-                            text: finalMessage,
-                            time: Date.now()
-                        });
+                        db.ref("chats/" + currentChatId).push({ from: currentUser, text: finalMessage, time: Date.now() });
                         showToast("VN Terkirim!");
-                    } else {
-                        showToast("Gagal upload VN.");
-                    }
-                } catch (error) {
-                    console.error(error);
-                    showToast("Error koneksi server.");
-                }
+                    } else { showToast("Gagal upload VN."); }
+                } catch (error) { console.error(error); showToast("Error koneksi server."); }
             }
-            // Panggil fungsi reset tampilan di sini
             toggleRecordingUI(false);
         };
-
-        mediaRecorder.start();
         
-        // PANGGIL FUNGSI TAMPILAN (TRUE = Merekam)
+        mediaRecorder.start();
         toggleRecordingUI(true);
         startTimer();
-
     } catch (err) {
         console.error(err);
         alert("Akses mic ditolak.");
-        toggleRecordingUI(false); // Pastikan balik normal jika error
+        toggleRecordingUI(false);
     }
-}
-function toggleRecordingUI(isRecording) {
-    const normalInput = document.getElementById("normal-input");
-    const recordingUI = document.getElementById("recording-ui");
-    const sendButton = document.getElementById("sendButton");
-    const micButton = document.getElementById("micButton");
-
-    // --- DETEKSI PERANGKAT ---
-    const isMobile = window.innerWidth <= 768;
-
-    if (isRecording) {
-        // --- SAAT MEREKAM ---
-        
-        if (isMobile) {
-            // KHUSUS HP: Matikan display-nya agar ruang benar-benar kosong (Fix Crop)
-            if(normalInput) normalInput.style.display = 'none';
-            if(sendButton) sendButton.style.display = 'none';
-        } else {
-            // KHUSUS LAPTOP: Pakai Opacity (Transparan) agar transisi smooth
-            if(normalInput) {
-                normalInput.style.opacity = '0'; 
-                normalInput.style.pointerEvents = 'none';
-            }
-            // Di laptop tombol send juga disembunyikan saat rekam
-            if(sendButton) sendButton.style.display = 'none';
-        }
-
-        if(recordingUI) recordingUI.style.display = 'flex';
-        if(micButton) micButton.style.color = '#ff5e5e';
-        
-    } else {
-        // --- SAAT SELESAI (RESET) ---
-        clearInterval(recordInterval);
-        const timerDisplay = document.getElementById('record-timer');
-        if(timerDisplay) timerDisplay.innerText = "00:00";
-
-        if(recordingUI) recordingUI.style.display = 'none';
-        
-        if (isMobile) {
-            // KHUSUS HP: Kembalikan display flex
-            if(normalInput) normalInput.style.display = 'flex';
-            if(sendButton) sendButton.style.display = 'flex';
-        } else {
-            // KHUSUS LAPTOP: Kembalikan opacity
-            if(normalInput) {
-                normalInput.style.opacity = '1'; 
-                normalInput.style.pointerEvents = 'auto';
-            }
-            // Kembalikan tombol send di laptop
-            if(sendButton) sendButton.style.display = 'block';
-        }
-
-        if(micButton) micButton.style.color = '';
-    }
-}
-
-// --- 2. FUNGSI DETEKSI GESER & BERHENTI ---
-function handleMove(e) {
-    if (!mediaRecorder || mediaRecorder.state !== "recording") return;
-    let currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-    let diffX = startX - currentX;
-    const instruction = document.getElementById('slide-instruction');
     
-    if (diffX > 60) {
-        isCancelled = true;
-        if(instruction) {
-            // TEKS DIPERPENDEK: "Batalkan"
-            instruction.innerHTML = "<i class='fas fa-trash'></i> Batalkan"; 
-            instruction.style.color = "#ff5e5e";
-        }
-    } else {
+    async function handleStart(e) {
+        if (e.cancelable) e.preventDefault();
+        startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
         isCancelled = false;
-        if(instruction) {
-            // TEKS DIPERPENDEK: "Geser Batal"
-            instruction.innerHTML = "<i class='fas fa-chevron-left'></i> Geser Batal"; 
-            instruction.style.color = "#888";
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
+            mediaRecorder.onstop = async () => {
+                stream.getTracks().forEach(t => t.stop());
+
+                if (!isCancelled && audioChunks.length > 0) {
+                    const vnBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    showToast("Mengirim VN...");
+                    
+                    const formData = new FormData(); formData.append('file', vnBlob);
+                    formData.append('upload_preset', 'hanung'); 
+                    formData.append('resource_type', 'video'); 
+                    
+                    try {
+                        const response = await fetch('https://api.cloudinary.com/v1_1/dwu8dbfjp/video/upload', { method: 'POST', body: formData });
+                        const data = await response.json();
+                        if (data.secure_url) {
+                            const encryptedURL = encryptData(data.secure_url);
+                            const finalMessage = "TYPE:VN:" + encryptedURL;
+                            db.ref("chats/" + currentChatId).push({ from: currentUser, text: finalMessage, time: Date.now() });
+                            showToast("VN Terkirim!");
+                        } else { showToast("Gagal upload VN."); }
+                    } catch (error) { console.error(error); showToast("Error koneksi."); }
+                }
+                toggleRecordingUI(false);
+            };
+            
+            mediaRecorder.start();
+            toggleRecordingUI(true);
+            startTimer();
+        } catch (err) {
+            console.error(err);
+            toggleRecordingUI(false);
+        }
+    }
+
+    function toggleRecordingUI(isRecording) {
+        const normalInput = document.getElementById("normal-input");
+        const recordingUI = document.getElementById("recording-ui");
+        const sendButton = document.getElementById("sendButton");
+        const micButton = document.getElementById("micButton");
+
+        const isMobile = window.innerWidth <= 768;
+
+        if (isRecording) {
+            if (isMobile) {
+                if(normalInput) normalInput.style.display = 'none';
+                if(sendButton) sendButton.style.display = 'none';
+            } else {
+                if(normalInput) { normalInput.style.opacity = '0'; normalInput.style.pointerEvents = 'none'; if(sendButton) sendButton.style.display = 'none'; }
+            }
+            if(recordingUI) recordingUI.style.display = 'flex';
+            if(micButton) micButton.style.color = '#ff5e5e';
+        } else {
+            clearInterval(recordInterval);
+            const timerDisplay = document.getElementById('record-timer');
+            if(timerDisplay) timerDisplay.innerText = "00:00";
+            if(recordingUI) recordingUI.style.display = 'none';
+            if (isMobile) { if(normalInput) normalInput.style.display = 'flex'; if(sendButton) sendButton.style.display = 'flex'; }
+            else { if(normalInput) { normalInput.style.opacity = '1'; normalInput.style.pointerEvents = 'auto'; if(sendButton) sendButton.style.display = 'block'; }
+            if(micButton) micButton.style.color = '';
         }
     }
 }
-
-function handleStop() {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        // Tampilan di-reset otomatis oleh mediaRecorder.onstop
-    } else {
-        toggleRecordingUI(false); // Paksa reset jika error
-    }
-}
-
-// --- 3. EVENT LISTENERS (Pastikan ada) ---
-if(micButton) {
-    micButton.addEventListener('mousedown', handleStart);
-    micButton.addEventListener('touchstart', handleStart, {passive: false});
-    micButton.addEventListener('touchmove', handleMove, {passive: false});
-    micButton.addEventListener('touchend', handleStop);
-}
-
-window.addEventListener('mouseup', () => {
-    if (mediaRecorder && mediaRecorder.state === "recording") handleStop();
-});
-// --- 4. FUNGSI RESET TAMPILAN (BARU) ---
-function resetInputUI() {
-    clearInterval(recordInterval);
-    
-    // Reset Timer
-    const timerDisplay = document.getElementById('record-timer');
-    if(timerDisplay) timerDisplay.innerText = "00:00";
-    
-    // Kembalikan Tampilan Awal
-    if(recordingUI) recordingUI.style.display = 'none';
-    if(normalInput) normalInput.style.display = 'flex';
-    if(sendButton) sendButton.style.display = 'block';
-    if(micButton) micButton.style.color = '';
-}
-
-// --- 5. PASANG EVENT LISTENERS ---
-if(micButton) {
-    // Mouse (Desktop)
-    micButton.addEventListener('mousedown', handleStart);
-    
-    // Touch (HP)
-    micButton.addEventListener('touchstart', handleStart, {passive: false});
-    micButton.addEventListener('touchmove', handleMove, {passive: false});
-    micButton.addEventListener('touchend', handleStop);
-}
-
-// Listener global untuk mouse agar bisa deteksi lepas tombol di luar area mic
-window.addEventListener('mouseup', () => {
-    if (mediaRecorder && mediaRecorder.state === "recording") handleStop();
-});
-function handleMove(e) {
-    if (!mediaRecorder || mediaRecorder.state !== "recording") return;
-    let currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-    let diffX = startX - currentX;
-
-    const instruction = document.getElementById('slide-instruction');
-    if (diffX > 60) {
-        isCancelled = true;
-        if(instruction) {
-            instruction.innerHTML = "<i class='fas fa-trash'></i> Lepas untuk batal";
-            instruction.style.color = "#ff5e5e";
-        }
-    } else {
-        isCancelled = false;
-        if(instruction) {
-            instruction.innerHTML = "<i class='fas fa-chevron-left'></i> Geser ke kiri untuk batal";
-            instruction.style.color = "#888";
-        }
-    }
-}
-
-
 </script>
 </body>
 </html>
