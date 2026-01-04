@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="image/genre/20.png">
 
-    <title>GoChat Pro - Ultimate Edition (Fixed)</title>
+    <title>GoChat Pro - Final Corrected</title>
 
     <!-- LIBRARIES -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -68,7 +68,7 @@
     .sidebar { 
         width: 30%; 
         min-width: 320px; 
-        border-right: 1px solid var(--glass-border); 
+        border-right:1px solid var(--glass-border); 
         display: flex; 
         flex-direction: column; 
         transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -1135,7 +1135,6 @@ function renderEmojiGrid(category) {
     if(!grid) return;
     grid.innerHTML = "";
     
-    // Render empty placeholder if array is empty
     if (emojiCategories[category].length === 0) {
         grid.innerHTML = "<div style='grid-column:1/-1; text-align:center; color:#666; padding:20px;'>Emoji Empty</div>";
         return;
@@ -1189,7 +1188,6 @@ function loadContacts() {
                 div.id = `contact-${item.id}`; 
                 div.className = `user`;
                 
-                // Safe onclick binding
                 div.onclick = (e) => { 
                     if (e.target.tagName !== 'IMG') {
                         openChat(item.id, u?.photo || '', u?.name || u?.username || item.id, isGrp); 
@@ -1313,7 +1311,6 @@ function renderMessage(m, key) {
                 let url = "";
                 try { url = decryptData(m.text.replace("IMG:", "")); } catch(e) { url = null; }
                 if (m.viewOnce) {
-                    // Safe onclick binding
                     const blurDiv = document.createElement('div');
                     blurDiv.className = 'view-once-blur';
                     blurDiv.innerHTML = `<img src="${url}" style="width:100%; display:block; filter:blur(25px);"><div class="view-once-overlay"><i class="fas fa-eye" style="font-size:30px;"></i><div style="font-size:12px;">Klik untuk melihat</div></div>`;
@@ -1321,7 +1318,6 @@ function renderMessage(m, key) {
                     textBody = blurDiv.outerHTML;
                 } else {
                     const imgTag = `<img src="${url}" style="max-width:100%; border-radius:10px; cursor:pointer;">`;
-                    // Safe onclick
                     const wrapImg = document.createElement('div');
                     wrapImg.innerHTML = imgTag;
                     wrapImg.querySelector('img').onclick = () => openLightbox(url);
@@ -1334,7 +1330,6 @@ function renderMessage(m, key) {
             } 
             else if (m.text.startsWith("CALL_JITSI:")) {
                 const p = m.text.split(":");
-                // Safe onclick
                 const callDiv = document.createElement('div');
                 callDiv.className = 'call-msg';
                 callDiv.innerHTML = `<i class="fas fa-video"></i><br><small>Panggilan Masuk (Klik Gabung)</small>`;
@@ -1474,7 +1469,6 @@ function showAppToast(title, body, photo, chatId) {
     const container = document.getElementById("custom-toast-container");
     const card = document.createElement("div");
     card.id = "custom-toast-card";
-    // Safe onclick
     card.onclick = () => {
         const isGrp = chatId.startsWith("GROUP_");
         openChat(chatId, photo || '', title, isGrp);
@@ -1750,7 +1744,7 @@ function startTimer() {
     if (recordInterval) clearInterval(recordInterval);
     recordInterval = setInterval(() => {
         sec++;
-        if (sec == 60) { min++; sec = 0; }
+        if (sec == 60) { min++; sec = 0; } 
         timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
     }, 1000);
 }
@@ -1981,7 +1975,6 @@ function showChatMenu(x, y, targetId) {
     }
     menu.style.display = "block";
     
-    // Safe binding instead of innerHTML with onclick
     menu.innerHTML = ""; 
     const div = document.createElement("div");
     div.className = "context-menu-item danger";
@@ -2200,7 +2193,6 @@ function openViewOnceMessage(key) {
             const url = decryptData(m.text.replace("IMG:", ""));
             const contentDiv = msgEl.querySelector('.msg');
             if (contentDiv) {
-                // Safe binding
                 const img = document.createElement('img');
                 img.src = url;
                 img.style = "max-width:100%; border-radius:10px; cursor:pointer;";
@@ -2237,7 +2229,3 @@ function searchUser() {
 </script>
 </body>
 </html>
-
-
-
-
