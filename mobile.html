@@ -1031,6 +1031,7 @@ let viewOnceIgnoredKey = null;
 let currentCallRoom = null; 
 let currentCallType = null;
 let globalContacts = {}; // Cache untuk data user
+let currentEmojiCategory = 'Smileys'; // Default emoji category
 
 window.addEventListener('focus', () => { isWindowFocused = true; });
 window.addEventListener('blur', () => { isWindowFocused = false; });
@@ -1115,12 +1116,10 @@ function setupEmoji() {
 function renderEmojiGrid(category) {
     currentEmojiCategory = category;
     
-    // Update style tab active
     document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
     const tabs = document.querySelectorAll('.emoji-tab');
     tabs.forEach(t => { if(t.innerText === emojiIcons[category]) t.classList.add('active'); });
 
-    // Render Grid
     const grid = document.getElementById("emojiGridContainer");
     grid.innerHTML = "";
     
@@ -1155,17 +1154,14 @@ function loadContacts() {
             items.push({ id: c.key, info: info }); 
         });
 
-        // Sorting
         items.sort((a, b) => b.info.time - a.info.time);
 
-        // Render
         items.forEach(item => {
             const isGrp = item.id.startsWith("GROUP_");
             const refPath = isGrp ? "groups/" + item.id : "users/" + item.id;
             
             db.ref(refPath).once("value", uSnap => {
                 const u = uSnap.val();
-                // Simpan ke cache globalContacts
                 if(u) globalContacts[item.id] = u;
 
                 let div = document.createElement("div");
@@ -1217,7 +1213,6 @@ function openChat(pId, photo, name, grp = false) {
 
     activeChatRef.on("child_added", snap => {
         renderMessage(snap.val(), snap.key);
-        msgsDiv.scrollTop = msgsDiv.scrollHeight;
         if(snap.val().from !== currentUser && !snap.val().seen) { db.ref("chats/" + currentChatId + "/" + snap.key).update({ seen: true }); }
     });
 
@@ -1237,13 +1232,16 @@ function openChat(pId, photo, name, grp = false) {
 }
 
 function renderMessage(m, key) {
+    // FIX: Ambil msgsDiv secara global/direct agar tidak error ReferenceError
+    const msgsDiv = document.getElementById("msgs");
+    if (!msgsDiv) return;
     if (document.getElementById("msg-wrap-" + key)) return;
+    
     const isMe = m.from === currentUser;
     const wrap = document.createElement("div");
     wrap.className = `msg-wrap ${isMe ? 'me' : 'you'}`;
     wrap.id = "msg-wrap-" + key;
     
-    // Touch Logic
     let touchStartX, touchStartY, touchTimer;
     wrap.oncontextmenu = (e) => { e.preventDefault(); openContextMenu(e, key, m); };
     wrap.addEventListener('touchstart', (e) => {
@@ -1258,7 +1256,6 @@ function renderMessage(m, key) {
     }, { passive: false });
     wrap.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
 
-    // Body Message
     let content = "";
     if (m.deleted) {
         content = `<div class="msg deleted">🚫 Pesan telah dihapus</div>`;
@@ -1298,7 +1295,6 @@ function renderMessage(m, key) {
         content = `<div class="msg">${textBody}${editedLabel}</div>`;
     }
 
-    // Footer (Time & Ticks)
     const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let statusIcons = "";
     if (isMe && !m.deleted) {
@@ -1314,6 +1310,36 @@ function renderMessage(m, key) {
     if (!isMe && currentChatId) {
         if (!m.seen) db.ref("chats/" + currentChatId + "/" + m.key).update({ seen: true });
     }
+}
+
+/* =========================================
+    TYPING STATUS (FIXED MISSING FUNCTION)
+    ========================================= */
+function watchTyping(chatId) {
+    db.ref(`typing/${chatId}`).on("value", snap => {
+        const data = snap.val();
+        const statusEl = document.getElementById("chatStatus");
+        if (!statusEl) return;
+        
+        let typingUsers = [];
+        if (data) {
+            Object.keys(data).forEach(key => {
+                if (key !== currentUser) typingUsers.push(data[key]);
+            });
+        }
+        
+        if (typingUsers.length > 0) {
+            statusEl.innerText = "Sedang mengetik...";
+            statusEl.style.color = "var(--accent)";
+        } else {
+            if(isGroup) {
+                statusEl.innerText = "Grup Chat";
+                statusEl.style.color = "var(--text-muted)";
+            } else {
+                updatePartnerOnlineStatus();
+            }
+        }
+    });
 }
 
 /* =========================================
@@ -1370,7 +1396,7 @@ async function send() {
 }
 
 /* =========================================
-    NOTIFICATION SYSTEM (FIXED)
+    NOTIFICATION SYSTEM
     ========================================= */
 function playNotificationSound(type = 'message') {
     const soundId = (type === 'ringtone') ? "ringtoneSound" : "notificationSound";
@@ -1382,6 +1408,12 @@ function playNotificationSound(type = 'message') {
         const playPromise = sound.play();
         if (playPromise !== undefined) { playPromise.then(() => {}).catch(e => {}); }
     }
+}
+
+// FIX: Added missing hideAppToast
+function hideAppToast() {
+    const container = document.getElementById("custom-toast-container");
+    container.style.top = "-200px";
 }
 
 function showAppToast(title, body, photo, chatId) {
@@ -1425,8 +1457,6 @@ function setupGlobalNotificationListener() {
     globalNotifListener = db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
         snap.forEach((child) => {
             const chatId = child.key.startsWith("GROUP_") ? child.key : [currentUser, child.key].sort().join("_");
-            
-            // Gunakan data user dari cache jika ada, jika tidak default
             let u = globalContacts[child.key];
 
             db.ref(`chats/${chatId}`).limitToLast(20).on("child_added", (msgSnap) => {
@@ -1434,7 +1464,6 @@ function setupGlobalNotificationListener() {
                 if (!m || !m.text) return;
                 const isRecent = m.time > (Date.now() - 20000);
                 if (m.from !== currentUser && !m.seen && currentChatId !== chatId) {
-                    // Gunakan data u (jika ada) atau default string
                     let notifTitle = u ? (child.key.startsWith("GROUP_") ? u.name : u.username) : (child.key.startsWith("GROUP_") ? "Grup" : "Teman");
                     let notifBody = "";
                     let soundType = 'message';
@@ -1445,18 +1474,19 @@ function setupGlobalNotificationListener() {
                         const callType = p[1]; const roomName = p[2];
                         notifBody = (callType === 'audio') ? "📞 Panggilan Suara..." : "📹 Panggilan Video...";
                         
-                        // Refresh data u jika belum ada (untuk call overlay)
                         if(!u) {
                             const refPath = child.key.startsWith("GROUP_") ? "groups/" + child.key : "users/" + child.key;
                             db.ref(refPath).once("value", uSnap => {
                                 const uFresh = uSnap.val();
                                 if(uFresh) globalContacts[child.key] = uFresh;
-                                if (!document.getElementById('videoCallModal').style.display || document.getElementById('videoCallModal').style.display === 'block') {
+                                const modal = document.getElementById('videoCallModal');
+                                if (modal && (!modal.style.display || modal.style.display === 'block')) {
                                     showCallOverlay(roomName, callType, notifTitle, uFresh ? uFresh.photo : photoUrl);
                                 }
                             });
                         } else {
-                            if (!document.getElementById('videoCallModal').style.display || document.getElementById('videoCallModal').style.display === 'block') {
+                            const modal = document.getElementById('videoCallModal');
+                            if (modal && (!modal.style.display || modal.style.display === 'block')) {
                                 showCallOverlay(roomName, callType, notifTitle, photoUrl);
                             }
                         }
@@ -1688,7 +1718,6 @@ function handleStop() {
     if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); } else { toggleRecordingUI(false); }
 }
 
-// Event Listeners Recording
 if(micBtn) {
     micBtn.addEventListener('mousedown', handleStart);
     micBtn.addEventListener('touchstart', handleStart, {passive: false});
@@ -1875,6 +1904,17 @@ function startJitsi(type) {
     joinVideoCall(roomName, type);
 }
 
+// FIX: Added missing pushMsg function
+function pushMsg(text) {
+    const msg = { 
+        from: currentUser, 
+        text: encryptData(text), 
+        time: Date.now(), 
+        seen: false 
+    };
+    db.ref("chats/" + currentChatId).push(msg);
+}
+
 function joinVideoCall(channelName, type) {
     activateWakeLock();
     document.getElementById("videoCallModal").style.display = "block";
@@ -2015,6 +2055,7 @@ function searchUser() {
         items[i].style.display = name.includes(query) ? 'flex' : 'none';
     }
 }
-</script> 
+</script>
 </body>
 </html>
+
