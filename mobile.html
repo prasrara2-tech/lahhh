@@ -1132,7 +1132,7 @@ async function initApp() {
 
     // Load Contacts & Others
     loadContacts();
-    setupEmoji(); // Panggil setupEmoji() baru
+    setupEmoji(); 
     setupTypingListener();
 }
 
@@ -1141,12 +1141,12 @@ async function initApp() {
     ========================================= */
 const emojiCategories = {
     'Smileys': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😍','🥰','😘','😋','😛','😜','🧐','😎','🥳','😏','😒','😔','🥺','😢','😭','😤','😠','😡','🤯','😳','😴','😵','🤐','🤢','😈','💀','💩','🤡','💑','👶','👵','🧏','🦦','👁','🧒','👅','👄','👂','👃','👆','🧑','🧓','🏋'],
-    'People': ['👶','👧','👨','👩','👱','👴','👵','🧕','🤶','🤵','🤰','👱','👲','🤱','🤴','🤷','🤸','🤹','🧔','🧑','🧒','🧓','🧖','👦','🏻','🏽','🏾','🏿'],
-    'Nature': ['🐶','🐺','🐸','🐙','🦑','🐙','🦓','🦞','🦞','🦟','🦦','🦢','🦥','🦧','🦘','🦖','🐼','🐬','🐭','🐮','🐰','🐹','🐻','🐼','🐔','🐾','🦃','🦏','🐇','🦅','🌸','🌷','🌹','🍀','🍂','🍃','🌴','🌵','🌾','🌿','🍁','🍄','🌰','🍇','🍈'],
-    'Food': ['🍏','🍎','🍐','🍑','🍒','🍓','🥝','🍍','🥑','🥒','🥓','🥔','🥕','🥖','🥗','🥘','🥙','🥚','🥛','🥜','🥝','🥞','🥠','🥢','🥣','🥤','🥥','🥦','🥧','🥨','🥩','🥪','🥫','🍬','🍭','🍮','🍯','🍰','🍱','🍲','🍳','🍴','🍵','🍶','🍷','🍸','🍹','🥺','🍻','🥼','🥽','🥾','🦀','🦁','🦂'],
-    'Activity': ['⚽','🔋','🔌','🔧','🔩','🔨','🚪','🚫','🚬','💣','🔫','💥','🔭','🕯','🏸','🎽','🎿','🕹','🎮','🕺','🎬','🎨','🎭','🎪','🎫','🏦','🎰','🏳'],
-    'Objects': ['⌚','⏳','⏸','⏺','⏐','🔑','🔒','🔓','🔏','🔐','🔔','🔕','🔖','📌','📎','📏','📐','📑','📒','📓','📔','📕','📖','📗','📘','📙','📚','📛','📜','📝','📬','📭','📫','📮','📯','📰','📱','📲','📳','📴','📵','🔌','🔍','🔎','🔏','🔐','🔑','🔒','🔓','⛏','🗝','🗞','🗟','🗠','🗡','🗢','🗣','🗤','🗥','🗦','🗧','🗨'],
-    'Symbols': ['💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','💔','💕','💞','💟','💠','💘','❤️','❤️','💌','💋','💄','💅','💆','💇','💈','💉','💊','💋','💍','💎','💏','💐','💑','💒','💓','💔','💕','💖','💗','💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','🔶','🔷','🔸','🔹','🔺','🔻','🔼','🔽','🔾','🔿'],
+    'People': ['👶','👧','👨','👩','👱','👴','👵','🧕','🤶','🤵','🤰','👱','👲','🤱','🤴','🤷','🤸','🤹','🧔','🧑','🧒','🧓','🧖','👦','🏻','🏽','🏾','🏿','👃','👆','👅','👂','🦰','🦱','🦲','🦳','🦼','🦴','🦵','🦶','🦁','🐯','🐨','🦍','🐷','🦊','🦊','🦌','🦏','🦏','🦎','🐰','🐹','🐹','🐹','🐔','🦈','🦈','🦏','🦅','🦘','🐾','🦩','🐄','👻','👽','🤖','🎃','🎄','🎅','🎆','🎉'],
+    'Nature': ['🐶','🐺','🐸','🐙','🦑','🐙','🦓','🦞','🦞','🦟','🦦','🦢','🦥','🦧','🦘','🦖','🐼','🐬','🐭','🐮','🐯','🐰','🐱','🐹','🐻','🐼','🐔','🐾','🦃','🦏','🦍','🦎','🦏','🐇','🦅','🌸','🌷','🌹','🍀','🍂','🍃','🌴','🌵','🌾','🌿','🍁','🍄','🌰','🍇','🍈'],
+    'Food': ['🍏','🍎','🍐','🍑','🍒','🍓','🥝','🍍','🥑','🥒','🥓','🥔','🥕','🥖','🥗','🥘','🥙','🥚','🥛','🥜','🥝','🥞','🥠','🥢','🥣','🥤','🥥','🥦','🥧','🥨','🥩','🥪','🍫','🍬','🍭','🍮','🍯','🍰','🍱','🍲','🍳','🍴','🍵','🍶','🍷','🍸','🍹','🥺','🍻','🥼','🥽','🥾','🥿','🦀','🦁','🦂'],
+    'Activity': ['⚽','🔋','🔌','🔧','🔩','🔨','🚪','🚫','🚬','💣','🔫','💥','🔭','🕯','🏸','🎽','🎿','🎮','🕹','🏹','🎬','📷','📸','📼','🎨','🎭','🎪','🎫','🏦','🎰','🏧','🏨','🏩','🏪'],
+    'Objects': ['⌚','⏳','⏸','⏺','⏏','⏐','🔑','🔒','🔓','🔏','🔐','🔔','🔕','🔖','📌','📎','📏','📐','📑','📒','📓','📔','📕','📖','📗','📘','📙','📚','📛','📜','📝','📬','📭','📫','📮','📯','📰','📱','📲','📳','📴','📵','🔌','🔍','🔎','🔏','🔐','🔑','🔒','🔓','⛏','🗝','🗞','🗟','🗠','🗡','🗢','🗣','🗤','🗥','🗦','🗧','🗨','🗩'],
+    'Symbols': ['💘','💙','💚','💛','💜','🖤','🖤','🖤','🖤','💔','💕','💞','💟','💠','💘','❤️','❤️','💌','💋','💄','💅','💆','💇','💈','💉','💊','💋','💍','💎','💏','💐','💑','💒','💓','💔','💕','💖','💗','💘','💙','💚','💛','💜','🖤','🖤','🖤','🧡','🧢','🧣','🏧','🏥','💮','💯','💱','💲','💳','💴','💵','💶','💷','💸','💹','💺','💻','💼','💽','💾','💿','🔶','🔷','🔸','🔹','🔺','🔻','🔼','🔽'],
     'Flags': ['🏳','🏴','🏵','🏶','🏷','🏸','🏹','🏺','🏻','🏼','🏽','🏾','🏿'] 
 };
 
@@ -1187,6 +1187,7 @@ function renderEmojiGrid(category) {
     const tabs = document.querySelectorAll('.emoji-tab');
     tabs.forEach(t => { if(t.innerText === emojiIcons[category]) t.classList.add('active'); });
 
+    // Render Grid
     const grid = document.getElementById('emojiGridContainer');
     grid.innerHTML = "";
     
@@ -1195,7 +1196,7 @@ function renderEmojiGrid(category) {
         el.className = "emoji-item";
         el.innerText = emojiChar;
         
-        // SPAM EMOJI LOGIC (TETAP TIDAK NUTUP PANEL)
+        // --- LOGIKA TOMBOL (STOP PROPAGATION) ---
         el.onclick = (e) => {
             e.stopPropagation(); 
             textInput.value += emojiChar;
@@ -1206,7 +1207,7 @@ function renderEmojiGrid(category) {
 }
 
 /* =========================================
-    CONTACTS & LIST (FIXED)
+    CONTACTS & LIST
     ========================================= */
 function loadContacts() {
     if (contactsListener) { db.ref(`user_chats/${currentUser}`).off('value', contactsListener); }
@@ -1222,8 +1223,10 @@ function loadContacts() {
             items.push({ id: c.key, info: info }); 
         });
 
+        // Sorting
         items.sort((a, b) => b.info.time - a.info.time);
 
+        // Render
         items.forEach(item => {
             const isGrp = item.id.startsWith("GROUP_");
             const refPath = isGrp ? "groups/" + item.id : "users/" + item.id;
@@ -1251,7 +1254,7 @@ function loadContacts() {
 }
 
 /* =========================================
-    MESSAGING CORE (FIXED)
+    MESSAGING CORE
     ========================================= */
 function openChat(pId, photo, name, grp = false) {
     if (activeChatRef) { activeChatRef.off(); }
@@ -1260,6 +1263,7 @@ function openChat(pId, photo, name, grp = false) {
     currentChatId = grp ? pId : [currentUser, pId].sort().join("_");
     activeChatRef = db.ref("chats/" + currentChatId).limitToLast(50);
     
+    // Reset Flag View Once
     viewOnceIgnoredKey = null; 
     selectedMsgId = null; 
     selectedMsgData = null;
@@ -1285,19 +1289,18 @@ function openChat(pId, photo, name, grp = false) {
 
     activeChatRef.on("child_changed", snap => {
         const key = snap.key;
-        if (key === viewOnceIgnoredKey) { viewOnceIgnoredKey = null; return; }
+        // Jika key ini viewOnceIgnoreKey, maka jangan re-render (agar UI tidak hilang)
+        if (key === viewOnceIgnoredKey) {
+            viewOnceIgnoredKey = null;
+            return; 
+        }
         const oldMsg = document.getElementById("msg-wrap-" + key);
         if(oldMsg) { oldMsg.remove(); renderMessage(snap.val(), key); }
     });
 
     db.ref(`typing/${currentChatId}`).off();
     watchTyping(currentChatId);
-    if(!grp) { updatePartnerOnlineStatus(); } 
-    else { 
-        document.getElementById("chatStatus").innerText = "Grup Chat"; document.getElementById("chatStatus").style.color = "var(--text-muted)"; 
-        isEditing = false; cancelReply();
-        db.ref("group_members/" + pId).once("value", snap => { groupMembersCount[pId] = snap.numChildren(); });
-    }
+    if(!grp) { updatePartnerOnlineStatus(); } else { document.getElementById("chatStatus").innerText = "Grup Chat"; document.getElementById("chatStatus").style.color = "var(--text-muted)"; isEditing = false; cancelReply(); }
 }
 
 function renderMessage(m, key) {
@@ -1307,6 +1310,7 @@ function renderMessage(m, key) {
     wrap.className = `msg-wrap ${isMe ? 'me' : 'you'}`;
     wrap.id = "msg-wrap-" + key;
     
+    // Touch Logic
     let touchStartX, touchStartY, touchTimer;
     wrap.oncontextmenu = (e) => { e.preventDefault(); openContextMenu(e, key, m); };
     wrap.addEventListener('touchstart', (e) => {
@@ -1321,6 +1325,7 @@ function renderMessage(m, key) {
     }, { passive: false });
     wrap.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
 
+    // Body Message
     let content = "";
     if (m.deleted) {
         content = `<div class="msg deleted">🚫 Pesan telah dihapus</div>`;
@@ -1360,6 +1365,7 @@ function renderMessage(m, key) {
         content = `<div class="msg">${textBody}${editedLabel}</div>`;
     }
 
+    // Footer (Time & Ticks)
     const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let statusIcons = "";
     if (isMe && !m.deleted) {
@@ -1378,6 +1384,7 @@ function renderMessage(m, key) {
     msgsDiv.appendChild(wrap);
     msgsDiv.scrollTop = msgsDiv.scrollHeight; 
 
+    // Logic Seen (Group vs Personal)
     if (!isMe && currentChatId) {
         if (isGroup) {
             if (!m.seenBy || !m.seenBy[currentUser]) db.ref(`chats/${currentChatId}/${m.key}/seenBy/${currentUser}`).set(true);
@@ -1418,6 +1425,7 @@ async function send() {
         return;
     }
 
+    // Edit
     if (isEditing) {
         if (!val) return;
         db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({
@@ -1441,14 +1449,15 @@ async function send() {
 }
 
 /* =========================================
-    NOTIFICATION SYSTEM (FIXED 'U' ERROR)
+    NOTIFICATION SYSTEM
     ========================================= */
 function playNotificationSound(type = 'message') {
     const soundId = (type === 'ringtone') ? "ringtoneSound" : "notificationSound";
     const sound = document.getElementById(soundId);
     if (sound) {
         sound.currentTime = 0;
-        if (type === 'ringtone') sound.loop = true; else sound.loop = false;
+        if (type === 'ringtone') sound.loop = true;
+        else sound.loop = false;
         const playPromise = sound.play();
         if (playPromise !== undefined) { playPromise.then(() => {}).catch(e => {}); }
     }
@@ -1467,7 +1476,9 @@ function showAppToast(title, body, photo, chatId) {
             hideAppToast();
         });
     };
+    
     card.innerHTML = `<img src="${photo}" class="toast-avatar"><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-body">${body}</div></div>`;
+    
     container.innerHTML = "";
     container.appendChild(card);
     playNotificationSound('message');
@@ -1483,8 +1494,9 @@ function showBrowserNotification(title, body, icon, tag) {
         vibrate: [200, 100, 200], tag: tag, requireInteraction: true
     };
     if (Notification.permission === "granted") {
+        const finalTitle = title;
         try {
-            const notif = new Notification(title, options);
+            const notif = new Notification(finalTitle, options);
             notif.onclick = () => { window.focus(); notif.close(); };
         } catch(e) { }
     }
@@ -1501,31 +1513,31 @@ function setupGlobalNotificationListener() {
                 const m = msgSnap.val();
                 if (!m || !m.text) return;
                 const isRecent = m.time > (Date.now() - 20000);
-                
-                // FIX: Ambil data user 'u' di dalam loop ini agar tidak undefined
                 if (m.from !== currentUser && !m.seen && currentChatId !== chatId) {
-                    const refPath = child.key.startsWith("GROUP_") ? "groups/" + child.key : "users/" + child.key;
+                    let notifTitle = child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman");
+                    let notifBody = "";
+                    let soundType = 'message';
                     
-                    db.ref(refPath).once("value", uSnap => {
-                        const u = uSnap.val(); // Mendefinisikan 'u' di sini
-                        let notifTitle = child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman");
-                        let notifBody = "";
-                        let soundType = 'message';
-                        
-                        if (m.text.startsWith("CALL_JITSI:")) {
-                            const p = m.text.split(":");
-                            const callType = p[1]; const roomName = p[2];
-                            notifBody = (callType === 'audio') ? "📞 Panggilan Suara..." : "📹 Panggilan Video...";
-                            showCallOverlay(roomName, callType, notifTitle, u?.photo);
-                        } 
-                        else if (m.text.startsWith("IMG:")) { notifBody = "📷 Mengirim Gambar..."; } 
-                        else if (m.text.startsWith("TYPE:VN:")) { notifBody = "🎤 Mengirim Voice Note..."; }
-                        else { try { notifBody = decryptData(m.text); } catch(e) { notifBody = "Pesan baru"; } }
-                        
-                        playNotificationSound(soundType);
-                        if (document.visibilityState === 'visible') { showAppToast(notifTitle, notifBody, u?.photo, child.key); }
-                        showBrowserNotification(notifTitle, notifBody, u?.photo, `chat_${chatId}`);
-                    });
+                    if (m.text.startsWith("CALL_JITSI:")) {
+                        const p = m.text.split(":");
+                        const callType = p[1]; const roomName = p[2];
+                        notifBody = (callType === 'audio') ? "📞 Panggilan Suara..." : "📹 Panggilan Video...";
+                        // Fix: Ambil data user 'u' di dalam loop ini agar tidak undefined
+                        const refPath = child.key.startsWith("GROUP_") ? "groups/" + child.key : "users/" + child.key;
+                        db.ref(refPath).once("value", uSnap => {
+                            const u = uSnap.val();
+                            if (!document.getElementById('videoCallModal').style.display || document.getElementById('videoCallModal').style.display === 'block') {
+                                showCallOverlay(roomName, callType, child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman"), u?.photo);
+                            }
+                        });
+                    } 
+                    else if (m.text.startsWith("IMG:")) { notifBody = "📷 Mengirim Gambar..."; } 
+                    else if (m.text.startsWith("TYPE:VN:")) { notifBody = "🎤 Mengirim Voice Note..."; }
+                    else { try { notifBody = decryptData(m.text); } catch(e) { notifBody = "Pesan baru"; } }
+                    
+                    playNotificationSound(soundType);
+                    if (document.visibilityState === 'visible') { showAppToast(child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman"), notifBody, u?.photo, child.key); }
+                    showBrowserNotification(child.key.startsWith("GROUP_") ? (u?.name || "Grup") : (u?.username || "Teman"), notifBody, u?.photo, `chat_${chatId}`);
                 }
             });
         });
@@ -1545,10 +1557,14 @@ function openContextMenu(e, key, data) {
     if (top > window.innerHeight - 200) top -= 200;
     if (left > window.innerWidth - 180) left -= 180;
     menu.style.top = top + "px"; menu.style.left = left + "px";
+
     const now = Date.now();
     const canEdit = (now - data.time < 3600000) && (data.from === currentUser);
     document.getElementById("menu-edit").style.display = canEdit ? "flex" : "none";
-    setTimeout(() => { document.onclick = () => { menu.style.display = "none"; document.onclick = null; }; }, 100);
+
+    setTimeout(() => {
+        document.onclick = () => { menu.style.display = "none"; document.onclick = null; };
+    }, 100);
 }
 function handleReply() {
     document.getElementById("msgMenu").style.display = "none";
@@ -1600,11 +1616,16 @@ function confirmDeleteMe() {
     showToast("Dihapus untuk Anda");
 }
 function closeDeleteSheet() { document.getElementById("deleteSheet").style.display = "none"; }
+
 function handleCopy() { 
     const txt = decryptData(selectedMsgData.text); 
     navigator.clipboard.writeText(txt);
     showToast("Disalin!");
 }
+
+/* =========================================
+    FORWARDING LOGIC
+    ========================================= */
 function handleForward() {
     document.getElementById("msgMenu").style.display = "none";
     const targetId = prompt("Masukkan User ID tujuan:");
@@ -1614,17 +1635,26 @@ function handleForward() {
 function executeForward(targetId) {
     const isGrp = targetId.startsWith("GROUP_");
     const targetChatId = isGrp ? targetId : [currentUser, targetId].sort().join("_");
-    const forwardData = { from: currentUser, text: selectedMsgData.text, time: Date.now(), seen: false, forwarded: true };
+    const forwardData = {
+        from: currentUser,
+        text: selectedMsgData.text, 
+        time: Date.now(),
+        seen: false,
+        forwarded: true
+    };
     db.ref("chats/" + targetChatId).push(forwardData).then(() => {
         showToast("Teruskan ke " + targetId);
         updateSummary("➡️ Teruskan ke " + targetId);
-        if(!isGrp) db.ref(`user_chats/${targetId}/${currentUser}`).update(updateSummary);
+        if(!isGrp) db.ref(`user_chats/${targetId}/${currentUser}`).update({
+            lastMsg: "➡️ Teruskan ke " + targetId,
+            time: Date.now()
+        });
     });
 }
 function handleCloseContextMenu() { if (contextMenu) contextMenu.style.display = 'none'; }
 
 /* =========================================
-    RECORDING LOGIC
+    RECORDING LOGIC (FIXED & UNNESTED)
     ========================================= */
 async function handleStart(e) {
     if (e.cancelable) e.preventDefault();
@@ -1634,7 +1664,7 @@ async function handleStart(e) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
-        mediaRecorder.ondataavailable = event => { if (event.data.size >0) audioChunks.push(event.data); };
+        mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
         mediaRecorder.onstop = async () => {
             stream.getTracks().forEach(t => t.stop());
             if (!isCancelled && audioChunks.length > 0) {
@@ -1653,85 +1683,89 @@ async function handleStart(e) {
                         db.ref("chats/" + currentChatId).push({ from: currentUser, text: finalMessage, time: Date.now() });
                         showToast("VN Terkirim!");
                     } else { showToast("Gagal upload VN."); }
-                } catch (error) { console.error(error); showToast("Error koneksi."); }
+                } catch (error) { console.error(error); showToast("Error koneksi server."); }
             }
             toggleRecordingUI(false);
         };
+        
         mediaRecorder.start();
         toggleRecordingUI(true);
         startTimer();
-    } catch (err) { console.error(err); alert("Akses mic ditolak."); toggleRecordingUI(false); }
-    
-    function toggleRecordingUI(isRecording) {
-        const normalInput = document.getElementById("normal-input");
-        const recordingUI = document.getElementById("recording-ui");
-        const sendButton = document.getElementById("sendButton");
-        const micButton = document.getElementById("micButton");
-        const isMobile = window.innerWidth <= 768;
-
-        if (isRecording) {
-            if (isMobile) {
-                if(normalInput) normalInput.style.display = 'none';
-                if(sendButton) sendButton.style.display = 'none';
-            } else {
-                if(normalInput) { normalInput.style.opacity = '0'; normalInput.style.pointerEvents = 'none'; if(sendButton) sendButton.style.display = 'none'; }
-            }
-            if(recordingUI) recordingUI.style.display = 'flex';
-            if(micButton) micButton.style.color = '#ff5e5e';
-        } else {
-            clearInterval(recordInterval);
-            const timerDisplay = document.getElementById('record-timer');
-            if(timerDisplay) timerDisplay.innerText = "00:00";
-            if (recordingUI) recordingUI.style.display = 'none';
-            if (isMobile) { if(normalInput) normalInput.style.display = 'flex'; if(sendButton) sendButton.style.display = 'flex'; }
-            else { if(normalInput) { normalInput.style.opacity = '1'; normalInput.style.pointerEvents = 'auto'; if(sendButton) sendButton.style.display = 'block'; }
-            if(micButton) micButton.style.color = '';
-        }
+    } catch (err) {
+        console.error(err);
+        alert("Akses mic ditolak.");
+        toggleRecordingUI(false);
     }
-
-    function startTimer() {
-        let sec = 0, min = 0; const timerDisplay = document.getElementById('record-timer');
-        if (!timerDisplay) return;
-        if (recordInterval) clearInterval(recordInterval);
-        recordInterval = setInterval(() => {
-            sec++; if (sec == 60) { min++; sec = 0; } 
-            timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
-        }, 1000);
-    }
-
-    function handleMove(e) {
-        if (!mediaRecorder || mediaRecorder.state !== "recording") return;
-        let currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-        let diffX = startX - currentX;
-        const instruction = document.getElementById('slide-instruction');
-        if (diffX > 60) {
-            isCancelled = true;
-            if(instruction) { 
-                instruction.innerHTML = "<i class='fas fa-trash'></i> Batalkan"; 
-                instruction.style.color = "#ff5e5e"; 
-            }
-        } else {
-            isCancelled = false;
-            if(instruction) { 
-                instruction.innerHTML = "<i class='fas fa-chevron-left'></i> Geser Batal"; 
-                instruction.style.color = "#888"; 
-            }
-        }
-    }
-
-    function handleStop() {
-        if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); } else { toggleRecordingUI(false); }
-    }
-
-    // Event Listeners
-    if(micBtn) {
-        micBtn.addEventListener('mousedown', handleStart);
-        micBtn.addEventListener('touchstart', handleStart, {passive: false});
-        micBtn.addEventListener('touchmove', handleMove, {passive: false});
-        micBtn.addEventListener('touchend', handleStop);
-    }
-    window.addEventListener('mouseup', () => { if (mediaRecorder && mediaRecorder.state === "recording") handleStop(); });
 }
+
+function toggleRecordingUI(isRecording) {
+    const normalInput = document.getElementById("normal-input");
+    const recordingUI = document.getElementById("recording-ui");
+    const sendButton = document.getElementById("sendButton");
+    const micButton = document.getElementById("micButton");
+    const isMobile = window.innerWidth <= 768;
+
+    if (isRecording) {
+        if (isMobile) {
+            if(normalInput) normalInput.style.display = 'none';
+            if(sendButton) sendButton.style.display = 'none';
+        } else {
+            if(normalInput) { normalInput.style.opacity = '0'; normalInput.style.pointerEvents = 'none'; if(sendButton) sendButton.style.display = 'none'; }
+        }
+        if(recordingUI) recordingUI.style.display = 'flex';
+        if(micButton) micBtn.style.color = '#ff5e5e';
+    } else {
+        clearInterval(recordInterval);
+        const timerDisplay = document.getElementById('record-timer');
+        if(timerDisplay) timerDisplay.innerText = "00:00";
+        if (recordingUI) recordingUI.style.display = 'none';
+        if (isMobile) { if(normalInput) normalInput.style.display = 'flex'; if(sendButton) sendButton.style.display = 'flex'; }
+        else { if(normalInput) { normalInput.style.opacity = '1'; normalInput.style.pointerEvents = 'auto'; if(sendButton) sendButton.style.display = 'block'; }
+        if(micButton) micBtn.style.color = '';
+    }
+}
+
+function startTimer() {
+    let sec = 0, min = 0; const timerDisplay = document.getElementById('record-timer');
+    if (!timerDisplay) return;
+    if (recordInterval) clearInterval(recordInterval);
+    recordInterval = setInterval(() => {
+        sec++; if (sec == 60) { min++; sec = 0; } timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
+    }, 1000);
+}
+
+function handleMove(e) {
+    if (!mediaRecorder || mediaRecorder.state !== "recording") return;
+    let currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    let diffX = startX - currentX;
+    const instruction = document.getElementById('slide-instruction');
+    if (diffX > 60) {
+        isCancelled = true;
+        if(instruction) { 
+            instruction.innerHTML = "<i class='fas fa-trash'></i> Batalkan"; 
+            instruction.style.color = "#ff5e5e"; 
+        }
+    } else {
+        isCancelled = false;
+        if(instruction) { 
+            instruction.innerHTML = "<i class='fas fa-chevron-left'></i> Geser Batal"; 
+            instruction.style.color = "#888"; 
+        }
+    }
+}
+
+function handleStop() {
+    if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); } else { toggleRecordingUI(false); }
+}
+
+// Event Listeners Recording
+if(micBtn) {
+    micBtn.addEventListener('mousedown', handleStart);
+    micBtn.addEventListener('touchstart', handleStart, {passive: false});
+    micBtn.addEventListener('touchmove', handleMove, {passive: false});
+    micBtn.addEventListener('touchend', handleStop);
+}
+window.addEventListener('mouseup', () => { if (mediaRecorder && mediaRecorder.state === "recording") handleStop(); });
 
 /* =========================================
     TOGGLE EMOJI PANEL
@@ -1742,9 +1776,40 @@ function toggleEmojiPanel() {
         panel.style.display = 'none';
     } else {
         panel.style.display = 'flex';
-        setupEmoji();
+        renderEmojiTabs('Smileys');
         renderEmojiGrid('Smileys');
     }
+}
+
+// Listener Emoji Button
+const emojiPanel = document.getElementById("emojiPanel");
+const emojiButton = document.getElementById("emojiButton");
+if(emojiButton && emojiPanel) {
+    emojiButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (emojiPanel.style.display === 'flex') { emojiPanel.style.display = 'none'; } 
+        else { emojiPanel.style.display = 'flex'; renderEmojiTabs('Smileys'); renderEmojiGrid('Smileys'); }
+    });
+}
+
+// Listener Global Click
+document.addEventListener('click', (e) => {
+    if (e.target.id !== 'emojiButton' && !e.target.closest('#emojiPanel')) {
+        if (emojiPanel.style.display === 'flex') emojiPanel.style.display = 'none';
+    }
+});
+
+function renderEmojiTabs(activeCat) {
+    const tabsContainer = document.getElementById('emojiTabsContainer');
+    const categories = Object.keys(emojiCategories);
+    tabsContainer.innerHTML = "";
+    categories.forEach(cat => {
+        const btn = document.createElement("div");
+        btn.className = `emoji-tab ${currentEmojiCategory === cat ? 'active' : ''}`;
+        btn.innerHTML = emojiIcons[cat] || cat.substring(0,1);
+        btn.onclick = () => renderEmojiGrid(cat);
+        tabsContainer.appendChild(btn);
+    });
 }
 
 /* =========================================
@@ -1763,13 +1828,13 @@ function setupTypingListener() {
 
 function updateSummary(msg) {
     const s = { lastMsg: msg.length > 30 ? msg.substring(0,30) + "..." : msg, time: Date.now() };
-    if (isGroup) { 
-        db.ref("group_members/" + currentPartnerId).once("value", snap => { 
-            snap.forEach(m => db.ref(`user_chats/${m.key}/${currentPartnerId}`).update(s)); 
-        }); 
-    } else { 
-        db.ref(`user_chats/${currentUser}/${currentPartnerId}`).update(s); 
-        db.ref(`user_chats/${currentPartnerId}/${currentUser}`).update(s); 
+    if (isGroup) {
+        db.ref("group_members/" + currentPartnerId).once("value", snap => {
+            snap.forEach(m => db.ref(`user_chats/${m.key}/${currentPartnerId}`).update(s));
+        });
+    } else {
+        db.ref(`user_chats/${currentUser}/${currentPartnerId}`).update(s);
+        db.ref(`user_chats/${currentPartnerId}/${currentUser}`).update(s);
     }
 }
 
@@ -1777,19 +1842,10 @@ function updatePartnerOnlineStatus() {
     db.ref("users/" + currentPartnerId).once("value", s => {
         const u = s.val();
         const st = document.getElementById("chatStatus");
-        st.innerText = u?.online ? "online" : "offline";
-        st.style.color = u?.online ? "var(--online)" : "var(--text-muted)";
-    });
-}
-
-// Listener Emoji Button
-const emojiPanel = document.getElementById("emojiPanel");
-const emojiButton = document.getElementById("emojiButton");
-if(emojiButton && emojiPanel) {
-    emojiButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (emojiPanel.style.display === 'flex') { emojiPanel.style.display = 'none'; } 
-        else { emojiPanel.style.display = 'flex'; toggleEmojiPanel(); }
+        if(st) {
+            st.innerText = u?.online ? "online" : "offline";
+            st.style.color = u?.online ? "var(--online)" : "var(--text-muted)";
+        }
     });
 }
 
@@ -1866,7 +1922,6 @@ function deleteChat(targetId) {
     if (confirm("Hapus percakapan ini?")) {
         db.ref(`user_chats/${currentUser}/${targetId}`).remove();
         showToast("Kontak dihapus"); 
-        // Reset UI jika chat yang sedang aktif dihapus
         if (currentChatId === targetId) {
             document.getElementById("chat-header-area").style.display = "none";
             document.getElementById("msgs").style.display = "none";
@@ -1874,7 +1929,6 @@ function deleteChat(targetId) {
             document.getElementById("welcome-screen").style.display = "flex";
             document.getElementById("sidebar").classList.remove("hidden");
         }
-        // Reload contacts
         const list = document.getElementById("users"); if(list) list.innerHTML = ""; loadContacts();
     }
 }
@@ -1914,8 +1968,8 @@ function joinVideoCall(channelName, type) {
 
 function endVideoCall() {
     if (window.jitsiApi) { try { window.jitsiApi.dispose(); window.jitsiApi = null; } catch (e) {} }
-    document.getElementById("ringtoneSound").pause();
-    document.getElementById("ringtoneSound").currentTime = 0;
+    const ringtone = document.getElementById("ringtoneSound");
+    if(ringtone) { ringtone.pause(); ringtone.currentTime = 0; }
     document.getElementById("jitsi-container").style.display = "none";
     document.getElementById("videoCallModal").style.display = "none";
     if (wakeLock) wakeLock.release();
@@ -1933,8 +1987,10 @@ function activateWakeLock() {
 
 function showCallOverlay(roomName, type, name, photoUrl) {
     currentCallRoom = roomName; currentCallType = type;
-    document.getElementById("call-overlay-name").innerText = name;
-    document.getElementById("call-overlay-avatar").src = photoUrl || (type === 'video' ? "https://cdn-icons-png.flaticon.com/512/3033/3033141.png" : "https://cdn-icons-png.flaticon.com/512/5974/5974637.png");
+    const nameEl = document.getElementById("call-overlay-name");
+    const avatarEl = document.getElementById("call-overlay-avatar");
+    if(nameEl) nameEl.innerText = name;
+    if(avatarEl) avatarEl.src = photoUrl || (type === 'video' ? "https://cdn-icons-png.flaticon.com/512/3033/3033141.png" : "https://cdn-icons-png.flaticon.com/512/5974/5974637.png");
     document.getElementById("call-overlay").style.display = "flex";
     playNotificationSound('ringtone');
 }
@@ -1994,8 +2050,8 @@ function toggleViewOnce() {
 function resetViewOnceUI() {
     const icon = document.getElementById("viewOnceIcon");
     const label = document.getElementById("viewOnceLabel");
-    if(isViewOnceEnabled) { icon.className = "fas fa-eye-slash"; icon.style.color = "#ff5e5e"; label.style.color = "#ff5e5e"; } 
-    else { icon.className = "far fa-eye"; icon.style.color = "#ccc"; label.style.color = "#ccc"; }
+    if(isViewOnceEnabled) { if(icon) icon.className = "fas fa-eye-slash"; if(icon) icon.style.color = "#ff5e5e"; if(label) label.style.color = "#ff5e5e"; } 
+    else { if(icon) icon.className = "far fa-eye"; if(icon) icon.style.color = "#ccc"; if(label) label.style.color = "#ccc"; }
 }
 function openLightbox(url) { document.getElementById("imageLightbox").style.display = 'flex'; document.getElementById("lightboxImg").src = url; }
 function closeLightbox() { document.getElementById("imageLightbox").style.display = 'none'; document.getElementById("lightboxImg").src = ''; }
@@ -2018,7 +2074,7 @@ function openViewOnceMessage(key) {
 }
 
 /* =========================================
-    INISIALISASI
+    INIT FINAL (ONLOAD)
     ========================================= */
 window.onload = initApp;
 document.getElementById("text").onkeydown = e => { if(e.key === "Enter") send(); };
@@ -2032,6 +2088,7 @@ function searchUser() {
         items[i].style.display = name.includes(query) ? 'flex' : 'none';
     }
 }
-</script> <!-- PENUTUP SCRIPT -->
+</script> <!-- PENUTUP SCRIPT FIX -->
 </body>
 </html>
+
