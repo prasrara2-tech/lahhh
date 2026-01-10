@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0a">
-    <title>GoChat Pro - Full Features</title>
+    <title>GoChat Pro - Enhanced Interaction</title>
 
     <!-- LIBRARIES -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -195,19 +195,22 @@
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
+    /* SIDEBAR INFO LAYOUT FIX */
     .user-info { 
         flex: 1; 
         min-width: 0; 
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* Stack vertically */
         justify-content: center;
+        gap: 2px; /* Small gap between Name and Preview */
     }
     
     .user-row-top {
         display: flex; 
         justify-content: space-between; 
         align-items: center; 
-        margin-bottom: 3px;
+        margin-bottom: 0; /* No margin, rely on gap in parent */
+        width: 100%;
     }
     
     .user-row-top b { 
@@ -218,12 +221,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
         letter-spacing: 0.2px;
+        /* Ensure name is on its line and doesn't get pushed */
+        max-width: 60%;
     }
     
     .sidebar-meta {
         display: flex;
         align-items: center;
         gap: 6px;
+        flex-shrink: 0; /* Don't squish */
     }
 
     .sidebar-tick {
@@ -241,24 +247,28 @@
         font-weight: 500;
     }
 
-    .user-status-text {
+    /* Preview container in sidebar */
+    #status-text- {
         font-size: 12px;
         color: var(--accent);
         font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        height: 15px; 
+        height: auto; 
+        min-height: 0;
+        width: 100%;
+        line-height: 1.2;
     }
-
+    
+    /* Explicitly style the preview span to be below name */
     .user-info span { 
         font-size: 13px; 
         color: var(--text-muted); 
         display: block; 
+        width: 100%; 
         white-space: nowrap; 
         overflow: hidden; 
         text-overflow: ellipsis; 
     }
+
     
     /* CHAT AREA */
     .chat { 
@@ -701,10 +711,18 @@
         .chat { width: 100%; }
     }
 
+    /* CONTEXT MENU UPDATE */
     .msg-context-menu {
-        display: none; position: fixed; z-index: 2000;
-        background: #1a1a1a; border: 1px solid var(--glass-border);
-        border-radius: 15px; width: 170px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: none; 
+        position: fixed; 
+        z-index: 2000;
+        background: #1a1a1a; 
+        border: 1px solid var(--glass-border);
+        border-radius: 15px; 
+        width: 170px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* Transform is handled in JS */
+        transform: none;
     }
     .menu-item {
         padding: 12px 15px; font-size: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer;
@@ -1249,7 +1267,7 @@ let typingTimeout;
 let selectedMsgId = null;
 let selectedMsgData = null;
 let isEditing = false;
-let replyData = null; // Stores the message being replied to
+let replyData = null; 
 let startX;
 let isCancelled = false;
 let recordInterval;
@@ -1379,7 +1397,6 @@ function renderEmojiGrid(category) {
 
 // --- SIDEBAR & STATUS LOGIC ---
 
-// Function to update sidebar tick (Read Receipt)
 function updateSidebarTick(partnerId, isSeen) {
     const tickId = isGroup ? `tick-GROUP_${currentPartnerId}` : `tick-${partnerId}`;
     const tickEl = document.getElementById(tickId);
@@ -1393,7 +1410,6 @@ function updateSidebarTick(partnerId, isSeen) {
     }
 }
 
-// Function to format Last Seen time
 function formatLastSeen(timestamp) {
     if(!timestamp) return "";
     const date = new Date(timestamp);
@@ -1537,16 +1553,6 @@ function updateOrAddContact(id, info) {
             checkMyLastMessageStatus(chatId, id);
         }
     };
-
-    function updateOnlineDisplay(id, el) {
-        const u = globalContacts[id];
-        if(u && u.online) {
-            el.innerText = "Online";
-            el.style.color = "var(--online)";
-        } else {
-            el.innerText = ""; 
-        }
-    }
 
     if (globalContacts[id]) {
         processContact();
@@ -1749,6 +1755,9 @@ function renderMessage(m, key) {
     wrap.addEventListener('touchstart', e => {
         touchStartX = e.touches[0].clientX;
         wrap.style.transition = 'none';
+        // Hide menu if visible (optional cleanup)
+        const menu = document.getElementById("msgMenu");
+        if(menu.style.display === "block") closeContextMenu();
     }, {passive: true});
 
     wrap.addEventListener('touchmove', e => {
@@ -1769,14 +1778,9 @@ function renderMessage(m, key) {
         wrap.style.transform = 'translateX(0)';
         wrap.style.opacity = 1;
 
-        // Swipe Left (Reply) or Right (Menu/Reply)
+        // Swipe Left or Right -> Trigger Reply
         if (Math.abs(diff) > 50) {
-            if (diff < 0) { // Swipe Left
-                handleReply(); // Swipe left triggers reply
-            } else { // Swipe Right
-                // Could trigger menu or reply too. Let's trigger Reply as requested.
-                handleReply(); 
-            }
+            handleReply(); 
         }
     });
 
@@ -1785,13 +1789,19 @@ function renderMessage(m, key) {
     wrap.addEventListener('touchstart', () => {
         pressTimer = setTimeout(() => {
             showContextMenu(key, m);
-        }, 500);
+        }, 500); // 500ms hold
     }, {passive: true});
     
     wrap.addEventListener('touchend', () => clearTimeout(pressTimer));
     wrap.addEventListener('touchmove', () => clearTimeout(pressTimer));
 
-    // Mouse Long Press for Desktop
+    // Mouse Right Click for Menu
+    wrap.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showContextMenu(key, m);
+    });
+
+    // Mouse Long Press for Desktop (optional)
     wrap.addEventListener('mousedown', () => {
         pressTimer = setTimeout(() => {
             showContextMenu(key, m);
@@ -1892,22 +1902,51 @@ function showContextMenu(key, data) {
     
     const menu = document.getElementById("msgMenu");
     
-    // Logic for "Delete for Everyone" (Only if sent by me and < 24h)
+    // Logic for "Delete for Everyone"
     const isMe = data.from === currentUser;
     const timeDiff = Date.now() - data.time;
     const canDeleteForEveryone = isMe && timeDiff < 86400000; // 24 hours
     
+    // Position Menu
+    const targetEl = document.getElementById("msg-wrap-" + key);
+    if(targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        
+        // Basic positioning
+        let top = rect.top + (rect.height / 2) - (menu.offsetHeight / 2);
+        let left;
+
+        if (window.innerWidth <= 768) {
+            // Mobile positioning logic: Next to bubble
+            if (isMe) { // My message (Right side) -> Menu on Left
+                left = rect.left - 170; 
+            } else { // Friend message (Left side) -> Menu on Right
+                left = rect.right; 
+            }
+
+            // Prevent going off screen
+            if (left < 10) left = 10;
+            if (left + 170 > window.innerWidth) left = window.innerWidth - 180;
+            
+            // Ensure vertical visibility
+            if (top < 50) top = 50;
+            if (top + menu.offsetHeight > window.innerHeight - 50) top = window.innerHeight - 50 - menu.offsetHeight;
+        } else {
+            // Desktop: Position near click
+            left = event.clientX + 10;
+            top = event.clientY + 10;
+        }
+        
+        menu.style.transform = 'none';
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+    }
+    
     // Rebuild menu content dynamically if needed, or just toggle
-    // Using static HTML for simplicity, hiding "Delete Everyone" if not allowed
     const delEveryoneBtn = document.getElementById("btnDeleteEveryone");
     if(delEveryoneBtn) delEveryoneBtn.style.display = canDeleteForEveryone ? "block" : "none";
 
-    // Position menu (simplified center of screen for mobile, or mouse position for desktop)
-    // For mobile swipe, center is safer
     menu.style.display = "block";
-    menu.style.left = "50%";
-    menu.style.top = "50%";
-    menu.style.transform = "translate(-50%, -50%)";
 }
 
 function closeContextMenu() {
@@ -1918,7 +1957,6 @@ function handleReply() {
     closeContextMenu();
     if (!selectedMsgData) return;
     
-    // Prepare reply data
     let previewText = "";
     if(selectedMsgData.text.startsWith("IMG:") || selectedMsgData.text.startsWith("VO:IMG:")) {
         previewText = "📷 Foto";
@@ -1987,8 +2025,7 @@ function closeForwardModal() {
 
 function executeForward(targetId, targetName) {
     // Logic to forward
-    // 1. Determine if image, text, or VN
-    let finalText = selectedMsgData.text; // Forward the raw encrypted text
+    let finalText = selectedMsgData.text; 
     let msgType = "text";
     
     if(finalText.startsWith("IMG:") || finalText.startsWith("VO:IMG:")) msgType = "image";
@@ -2002,28 +2039,26 @@ function executeForward(targetId, targetName) {
         text: finalText,
         time: Date.now(),
         seen: false,
-        forwarded: true // Marker to know it's a forwarded message if needed for UI
+        forwarded: true 
     };
 
-    // 2. Push to target chat
     db.ref("chats/" + targetChatId).push(pushData).then(() => {
-        // 3. Update sidebar
         let preview = "";
         if(msgType === "image") preview = "📷 Foto";
         else if(msgType === "audio") preview = "🎤 Pesan Suara";
         else preview = decryptData(finalText);
         
-        // Update current user's sidebar for that contact
+        // Update current user's sidebar
         db.ref(`user_chats/${currentUser}/${targetId}`).update({
             lastMsg: preview,
             time: Date.now()
         });
 
-        // Update recipient's sidebar (so they see the new chat)
+        // Update recipient's sidebar
         db.ref(`user_chats/${targetId}/${currentUser}`).update({
             lastMsg: "📨 Pesan diteruskan",
             time: Date.now(),
-            unread: 1 // Increment unread for them
+            unread: 1
         });
 
         showToast(`Diteruskan ke ${targetName}`);
@@ -2063,7 +2098,7 @@ function handleDelete() {
     closeContextMenu(); 
     const now = Date.now();
     const isMe = selectedMsgData.from === currentUser; 
-    const canDeleteEveryone = isMe && (now - selectedMsgData.time < 172800000); // 48 hours window
+    const canDeleteEveryone = isMe && (now - selectedMsgData.time < 172800000);
     
     const sheet = document.getElementById("deleteSheet");
     const btnDelEveryone = document.getElementById("btnDeleteEveryone");
@@ -2075,7 +2110,6 @@ function handleDelete() {
 function closeDeleteSheet() { document.getElementById("deleteSheet").style.display = "none"; }
 
 function confirmDeleteEveryone() {
-    // Update Firebase
     db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({ 
         deleted: true, 
         text: encryptData("🚫 Pesan ini telah dihapus"),
@@ -2084,7 +2118,6 @@ function confirmDeleteEveryone() {
     closeDeleteSheet();
     showToast("Dihapus untuk semua");
     
-    // Update UI immediately
     const el = document.getElementById("msg-wrap-" + selectedMsgId);
     if(el) {
         const msgBubble = el.querySelector(".msg");
@@ -2093,7 +2126,6 @@ function confirmDeleteEveryone() {
 }
 
 function confirmDeleteMe() {
-    // Remove from DOM only (Local deletion)
     const el = document.getElementById("msg-wrap-" + selectedMsgId);
     if(el) el.remove();
     closeDeleteSheet();
@@ -2156,7 +2188,7 @@ function setupTypingListener() {
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
             db.ref(`typing/${currentChatId}/${currentUser}`).remove();
-        }, 2000);
+        },2000);
     });
 }
 
