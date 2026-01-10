@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0a">
-    <title>GoChat Pro - Smooth Status & Auto-Friend</title>
+    <title>GoChat Pro - Full Features</title>
 
     <!-- LIBRARIES -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -76,7 +76,7 @@
         display: flex; 
         justify-content: space-between; 
         align-items: center; 
-        border-bottom: 1px solid var(--glass-border); 
+        border-bottom:1px solid var(--glass-border); 
         position: relative; 
         z-index: 10; 
     }
@@ -312,6 +312,7 @@
         max-width: 75%; 
         position: relative; 
         margin-bottom: 4px;
+        transition: transform 0.2s ease;
     }
     
     .msg-wrap.me { 
@@ -335,6 +336,7 @@
         user-select: text;
         min-width: 60px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        touch-action: pan-y; /* Allow vertical scroll, handle horizontal in JS */
     }
     
     @keyframes fadeIn { 
@@ -355,9 +357,36 @@
         border: 1px solid var(--glass-border); 
     }
 
+    /* REPLY BUBBLE STYLE */
+    .reply-bubble {
+        background: rgba(0,0,0,0.1);
+        border-left: 3px solid #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        font-size: 12px;
+    }
+    .me .reply-bubble {
+        background: rgba(255,255,255,0.2);
+        border-left-color: rgba(0,0,0,0.4);
+    }
+    .reply-sender {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 2px;
+        font-size: 11px;
+        opacity: 0.8;
+    }
+    .reply-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
     /* CALL MESSAGE UI */
     .call-msg {
-        display: flex;
+        display: flex,
         align-items: center,
         gap: 12px,
         background: rgba(255, 255, 255, 0.1),
@@ -650,6 +679,7 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
+    /* MODALS & SHEETS */
     .modal {
         display: none; 
         position: fixed; 
@@ -695,6 +725,7 @@
         right: 0;
         z-index: 5;
         animation: slideUp 0.2s ease;
+        cursor: pointer;
     }
     @keyframes slideUp {
         from { transform: translateY(100%); opacity: 0; }
@@ -846,6 +877,38 @@
     .view-once-container { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; }
     .view-once-label { font-size: 12px; color: #ccc; }
 
+    /* FORWARD MODAL */
+    #forwardModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.95);
+        z-index: 4000;
+        flex-direction: column;
+    }
+    #forwardModalHeader {
+        padding: 20px;
+        text-align: center;
+        background: #1a1a1a;
+        border-bottom: 1px solid #333;
+    }
+    #forwardList {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    .forward-contact {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px;
+        border-bottom: 1px solid #222;
+        cursor: pointer;
+    }
+    .forward-contact:active { background: #222; }
+    .forward-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .forward-name { font-size: 16px; color: white; font-weight: 500; }
+
     /* Call Modal */
     #videoCallModal {
         display: none; 
@@ -945,6 +1008,15 @@
     <audio id="ringtoneSound" src="https://assets.mixkit.co/active_storage/sfx/1358/1358-preview.mp3" preload="auto" loop></audio>
 
     <div id="custom-toast-container"></div>
+
+    <!-- FORWARD MODAL -->
+    <div id="forwardModal">
+        <div id="forwardModalHeader">
+            <h3 style="margin:0; color:white;">Pilih Penerima</h3>
+            <i class="fas fa-times" onclick="closeForwardModal()" style="position:absolute; right:20px; top:20px; color:#888; cursor:pointer; font-size:20px;"></i>
+        </div>
+        <div id="forwardList"></div>
+    </div>
 
     <div id="videoCallModal">
         <div style="position: absolute; top: 20px; right: 20px; z-index: 10;">
@@ -1085,6 +1157,7 @@
     </div>
 </div>
 
+<!-- MODALS -->
 <div id="addFriendModal" class="modal">
     <div class="modal-content">
         <h3 style="color:var(--accent); margin-top:0;">Mulai Chat Baru</h3>
@@ -1104,11 +1177,12 @@
     </div>
 </div>
 
+<!-- CONTEXT MENU & ACTIONS -->
 <div id="msgMenu" class="msg-context-menu">
     <div class="menu-item" onclick="handleReply()"><i class="fa fa-reply"></i> Balas</div>
-    <div class="menu-item" onclick="handleCopy()"><i class="fa fa-copy"></i> Salin</div>
-    <div class="menu-item" id="menu-edit" onclick="handleEdit()"><i class="fa fa-edit"></i> Edit</div>
     <div class="menu-item" onclick="handleForward()"><i class="fa fa-share"></i> Teruskan</div>
+    <div class="menu-item" onclick="handleCopy()"><i class="fa fa-copy"></i> Salin Teks</div>
+    <div class="menu-item" id="menu-edit" onclick="handleEdit()"><i class="fa fa-edit"></i> Edit</div>
     <hr style="border:0; border-top:1px solid #333; margin:0;">
     <div class="menu-item danger" onclick="handleDelete()"><i class="fa fa-trash"></i> Hapus</div>
 </div>
@@ -1123,7 +1197,6 @@
 </div>
 
 <div id="menuOverlay" onclick="closeContextMenu()"></div>
-<div id="contextMenu" class="context-menu"></div>
 <div id="toast"></div>
 
 <script>
@@ -1176,7 +1249,7 @@ let typingTimeout;
 let selectedMsgId = null;
 let selectedMsgData = null;
 let isEditing = false;
-let replyData = null;
+let replyData = null; // Stores the message being replied to
 let startX;
 let isCancelled = false;
 let recordInterval;
@@ -1365,22 +1438,17 @@ function updateOrAddContact(id, info) {
         const name = u?.name || u?.username || id;
         const msgPreview = info.lastMsg || '...';
         
-        // Format Time
         let timeStr = "";
         if(info.time) {
             const d = new Date(info.time);
             timeStr = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
         }
 
-        // Unread Badge Logic
         const unreadCount = info.unread || 0;
         const badgeHtml = unreadCount > 0 ? `<div class="user-badge" id="badge-${id}">${unreadCount}</div>` : "";
 
-        // Online Status Dot
         const statusDotHtml = (!isGrp && u?.online) ? `<div class="status-dot" id="dot-${id}" style="display:block"></div>` : "";
 
-        // Placeholder for Tick (Read Receipt)
-        // Initialize as gray check, logic in updateSidebarTick will change it
         const tickHtml = (!isGrp) ? `<i id="tick-${id}" class="fas fa-check sidebar-tick"></i>` : "";
 
         const htmlContent = `
@@ -1418,8 +1486,6 @@ function updateOrAddContact(id, info) {
             list.prepend(div);
         }
 
-        // --- REAL-TIME STATUS UPDATES (SIDEBAR) ---
-        
         if (!isGrp) {
             const typingRef = db.ref(`typing/${chatId}/${id}`);
             typingRef.on('value', snap => {
@@ -1431,7 +1497,6 @@ function updateOrAddContact(id, info) {
                         statusEl.style.color = "var(--accent)";
                     } else {
                         statusEl.innerText = "";
-                        // Revert to online/offline text if needed, or leave blank
                         if(u?.online) {
                             statusEl.innerText = "Online";
                             statusEl.style.color = "var(--online)";
@@ -1468,7 +1533,6 @@ function updateOrAddContact(id, info) {
             });
         }
         
-        // Check initial read receipt status
         if(!isGrp) {
             checkMyLastMessageStatus(chatId, id);
         }
@@ -1496,21 +1560,17 @@ function updateOrAddContact(id, info) {
     }
 }
 
-// Helper to find last message from ME and update sidebar tick
 function checkMyLastMessageStatus(chatId, partnerId) {
     db.ref("chats/" + chatId).limitToLast(1).once("value", snapshot => {
         if(snapshot.exists()) {
             const msgs = snapshot.val();
             const keys = Object.keys(msgs);
-            const lastKey = keys[0]; // Most recent
+            const lastKey = keys[0]; 
             const lastMsg = msgs[lastKey];
             
-            // If the last message is from ME, set tick based on 'seen'
             if(lastMsg.from === currentUser) {
                 updateSidebarTick(partnerId, lastMsg.seen);
             } else {
-                // If last msg is from THEM, hide the tick (or show gray check if you want style)
-                // Usually we only show receipts for OUR messages
                 const tickEl = document.getElementById(`tick-${partnerId}`);
                 if(tickEl) tickEl.style.display = 'none';
             }
@@ -1529,7 +1589,6 @@ function openChat(pId, photo, name, grp = false) {
     selectedMsgId = null; 
     selectedMsgData = null;
     
-    // RESET UNREAD COUNT
     db.ref(`user_chats/${currentUser}/${pId}`).update({ unread: 0 });
     const badge = document.getElementById(`badge-${pId}`);
     if(badge) badge.remove();
@@ -1549,16 +1608,13 @@ function openChat(pId, photo, name, grp = false) {
     const chatAvatarEl = document.getElementById("chatAvatar");
     if(chatAvatarEl) chatAvatarEl.src = photo || (grp ? "https://cdn-icons-png.flaticon.com/512/615/615075.png" : "https://cdn-icons-png.flaticon.com/512/149/149071.png");
 
-    // --- CHAT HEADER STATUS LOGIC (Online / Last Seen) WITH ANIMATION ---
-    
     const statusEl = document.getElementById("chatStatus");
     const headerDot = document.getElementById("header-status-dot");
     
-    // Helper function to animate status change
     function setStatus(text, color, isOnlineBool) {
         if(statusEl.innerText !== text) {
             statusEl.classList.remove("status-anim");
-            void statusEl.offsetWidth; // Trigger reflow
+            void statusEl.offsetWidth; 
             statusEl.innerText = text;
             statusEl.style.color = color;
             statusEl.classList.add("status-anim");
@@ -1571,14 +1627,13 @@ function openChat(pId, photo, name, grp = false) {
     }
 
     if(!grp) {
-        // 1. Listen to Online Status
         const onlineRef = db.ref(`users/${pId}/online`);
         onlineRef.on('value', snap => {
             const isOnline = snap.val();
             if(isOnline) {
                 setStatus(`<i class="fas fa-circle" style="font-size:8px; color:var(--online);"></i> Online`, "var(--online)", true);
             } else {
-                setStatus("", "#888", false); // Will be filled by Last Seen listener
+                setStatus("", "#888", false); 
                 db.ref(`users/${pId}/lastSeen`).once('value', s => {
                     if(!snap.val()) { 
                         const ls = s.val();
@@ -1588,7 +1643,6 @@ function openChat(pId, photo, name, grp = false) {
             }
         });
 
-        // 2. Listen to Last Seen changes
         const lastSeenRef = db.ref(`users/${pId}/lastSeen`);
         lastSeenRef.on('value', snap => {
             const isOnline = (statusEl.innerText.includes("Online"));
@@ -1598,14 +1652,12 @@ function openChat(pId, photo, name, grp = false) {
             }
         });
         
-        // 3. Listen to Typing
         const typingRef = db.ref(`typing/${currentChatId}/${pId}`);
         typingRef.on('value', snap => {
              const isTyping = snap.exists();
              if(isTyping) {
                  setStatus("Sedang mengetik...", "var(--accent)", false);
              } else {
-                 // Revert to status check
                  onlineRef.once('value');
              }
         });
@@ -1615,7 +1667,6 @@ function openChat(pId, photo, name, grp = false) {
         if(headerDot) headerDot.style.display = "none";
     }
 
-    // MESSAGES
     const msgsDiv = document.getElementById("msgs");
     msgsDiv.innerHTML = "";
 
@@ -1624,12 +1675,10 @@ function openChat(pId, photo, name, grp = false) {
         renderMessage(msgData, snap.key);
         msgsDiv.scrollTop = msgsDiv.scrollHeight;
         
-        // Incoming message logic
         if(msgData.from !== currentUser && !msgData.seen) { 
             db.ref("chats/" + currentChatId + "/" + snap.key).update({ seen: true }); 
         }
         
-        // Update sidebar tick if this message is from ME
         if(msgData.from === currentUser) {
             updateSidebarTick(pId, msgData.seen);
         }
@@ -1643,15 +1692,12 @@ function openChat(pId, photo, name, grp = false) {
         }
         const msgData = snap.val();
         
-        // Re-render message
         const oldMsg = document.getElementById("msg-wrap-" + key);
         if(oldMsg) { oldMsg.remove(); renderMessage(msgData, key); }
         
-        // If status changed (seen) and message is from ME, update sidebar tick
         if(msgData.from === currentUser && msgData.seen !== undefined) {
             updateSidebarTick(pId, msgData.seen);
             
-            // Update the tick inside the chat bubble too
             const metaStatus = document.getElementById(`meta-status-${key}`);
             if(metaStatus) {
                 if(msgData.seen) {
@@ -1685,6 +1731,10 @@ function closeChat() {
     document.getElementById("msgs").innerHTML = "";
 }
 
+/* --- SWIPE & MENU LOGIC --- */
+let touchStartX = 0;
+let touchEndX = 0;
+
 function renderMessage(m, key) {
     const msgsDiv = document.getElementById("msgs");
     if (!msgsDiv) return;
@@ -1694,6 +1744,60 @@ function renderMessage(m, key) {
     const wrap = document.createElement("div");
     wrap.className = `msg-wrap ${isMe ? 'me' : 'you'}`;
     wrap.id = "msg-wrap-" + key;
+
+    // Add Touch Listeners for Swipe
+    wrap.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        wrap.style.transition = 'none';
+    }, {passive: true});
+
+    wrap.addEventListener('touchmove', e => {
+        const touchCurrentX = e.touches[0].clientX;
+        const diff = touchCurrentX - touchStartX;
+        // Only allow small horizontal movement to show swipe feedback
+        if(Math.abs(diff) < 50) {
+            wrap.style.transform = `translateX(${diff}px)`;
+            wrap.style.opacity = 1 - Math.abs(diff)/200;
+        }
+    }, {passive: true});
+
+    wrap.addEventListener('touchend', e => {
+        const touchEnd = e.changedTouches[0].clientX;
+        const diff = touchEnd - touchStartX;
+        
+        wrap.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        wrap.style.transform = 'translateX(0)';
+        wrap.style.opacity = 1;
+
+        // Swipe Left (Reply) or Right (Menu/Reply)
+        if (Math.abs(diff) > 50) {
+            if (diff < 0) { // Swipe Left
+                handleReply(); // Swipe left triggers reply
+            } else { // Swipe Right
+                // Could trigger menu or reply too. Let's trigger Reply as requested.
+                handleReply(); 
+            }
+        }
+    });
+
+    // Long Press for Menu
+    let pressTimer;
+    wrap.addEventListener('touchstart', () => {
+        pressTimer = setTimeout(() => {
+            showContextMenu(key, m);
+        }, 500);
+    }, {passive: true});
+    
+    wrap.addEventListener('touchend', () => clearTimeout(pressTimer));
+    wrap.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+    // Mouse Long Press for Desktop
+    wrap.addEventListener('mousedown', () => {
+        pressTimer = setTimeout(() => {
+            showContextMenu(key, m);
+        }, 500);
+    });
+    wrap.addEventListener('mouseup', () => clearTimeout(pressTimer));
 
     let content = "";
     if (m.deleted) {
@@ -1744,13 +1848,23 @@ function renderMessage(m, key) {
             textBody = `<span style="color:red;">Gagal dekripsi</span>`; 
         }
 
+        // Handle Reply Preview in Bubble
+        if (m.replyTo) {
+            const replyText = m.replyTo.text.startsWith("IMG:") ? "📷 Foto" : decryptData(m.replyTo.text);
+            textBody = `
+                <div class="reply-bubble">
+                    <span class="reply-sender">${m.replyTo.user === currentUser ? 'Anda' : m.replyTo.user}</span>
+                    <span class="reply-text">${replyText}</span>
+                </div>
+            ` + textBody;
+        }
+
         const editedLabel = m.edited ? `<small style="opacity:0.5; font-size:9px; margin-left:4px;">(diedit)</small>` : "";
         content = `<div class="msg">${textBody}${editedLabel}</div>`;
     }
 
     const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
-    // Tick Logic inside Bubble
     let statusIcons = "";
     if (isMe && !m.deleted) {
         const tickClass = m.seen ? "fas fa-check-double msg-status read" : "fas fa-check msg-status";
@@ -1769,6 +1883,225 @@ function renderMessage(m, key) {
     msgsDiv.appendChild(wrap);
     msgsDiv.scrollTop = msgsDiv.scrollHeight; 
 }
+
+// --- MENU & ACTIONS ---
+
+function showContextMenu(key, data) {
+    selectedMsgId = key;
+    selectedMsgData = data;
+    
+    const menu = document.getElementById("msgMenu");
+    
+    // Logic for "Delete for Everyone" (Only if sent by me and < 24h)
+    const isMe = data.from === currentUser;
+    const timeDiff = Date.now() - data.time;
+    const canDeleteForEveryone = isMe && timeDiff < 86400000; // 24 hours
+    
+    // Rebuild menu content dynamically if needed, or just toggle
+    // Using static HTML for simplicity, hiding "Delete Everyone" if not allowed
+    const delEveryoneBtn = document.getElementById("btnDeleteEveryone");
+    if(delEveryoneBtn) delEveryoneBtn.style.display = canDeleteForEveryone ? "block" : "none";
+
+    // Position menu (simplified center of screen for mobile, or mouse position for desktop)
+    // For mobile swipe, center is safer
+    menu.style.display = "block";
+    menu.style.left = "50%";
+    menu.style.top = "50%";
+    menu.style.transform = "translate(-50%, -50%)";
+}
+
+function closeContextMenu() {
+    document.getElementById("msgMenu").style.display = 'none';
+}
+
+function handleReply() {
+    closeContextMenu();
+    if (!selectedMsgData) return;
+    
+    // Prepare reply data
+    let previewText = "";
+    if(selectedMsgData.text.startsWith("IMG:") || selectedMsgData.text.startsWith("VO:IMG:")) {
+        previewText = "📷 Foto";
+    } else if (selectedMsgData.text.startsWith("TYPE:VN:")) {
+        previewText = "🎤 Pesan Suara";
+    } else {
+        previewText = decryptData(selectedMsgData.text);
+    }
+
+    replyData = { 
+        id: selectedMsgId, 
+        user: selectedMsgData.from, 
+        text: selectedMsgData.text,
+        type: selectedMsgData.text
+    };
+    
+    document.getElementById("reply-preview").style.display = "block";
+    document.getElementById("reply-user").innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
+    document.getElementById("reply-text").innerText = previewText;
+    document.getElementById("text").focus();
+}
+
+function cancelReply() { 
+    replyData = null; 
+    document.getElementById("reply-preview").style.display = "none"; 
+}
+
+function handleForward() {
+    closeContextMenu();
+    openForwardModal();
+}
+
+function openForwardModal() {
+    const modal = document.getElementById("forwardModal");
+    const list = document.getElementById("forwardList");
+    list.innerHTML = "";
+    modal.style.display = "flex";
+
+    if(!selectedMsgData) return;
+
+    // Populate list from globalContacts
+    const ids = Object.keys(globalContacts);
+    ids.forEach(id => {
+        const u = globalContacts[id];
+        if(!u) return;
+        const isGrp = id.startsWith("GROUP_");
+        const name = u.name || u.username || id;
+        const photo = u.photo || (isGrp ? "https://cdn-icons-png.flaticon.com/512/615/615075.png" : "https://cdn-icons-png.flaticon.com/512/149/149071.png");
+
+        const el = document.createElement("div");
+        el.className = "forward-contact";
+        el.innerHTML = `
+            <img src="${photo}" class="forward-avatar">
+            <div class="forward-name">${name}</div>
+        `;
+        el.onclick = () => {
+            executeForward(id, name);
+        };
+        list.appendChild(el);
+    });
+}
+
+function closeForwardModal() {
+    document.getElementById("forwardModal").style.display = "none";
+}
+
+function executeForward(targetId, targetName) {
+    // Logic to forward
+    // 1. Determine if image, text, or VN
+    let finalText = selectedMsgData.text; // Forward the raw encrypted text
+    let msgType = "text";
+    
+    if(finalText.startsWith("IMG:") || finalText.startsWith("VO:IMG:")) msgType = "image";
+    else if(finalText.startsWith("TYPE:VN:")) msgType = "audio";
+
+    const isGrp = targetId.startsWith("GROUP_");
+    const targetChatId = isGrp ? targetId : [currentUser, targetId].sort().join("_");
+
+    const pushData = {
+        from: currentUser,
+        text: finalText,
+        time: Date.now(),
+        seen: false,
+        forwarded: true // Marker to know it's a forwarded message if needed for UI
+    };
+
+    // 2. Push to target chat
+    db.ref("chats/" + targetChatId).push(pushData).then(() => {
+        // 3. Update sidebar
+        let preview = "";
+        if(msgType === "image") preview = "📷 Foto";
+        else if(msgType === "audio") preview = "🎤 Pesan Suara";
+        else preview = decryptData(finalText);
+        
+        // Update current user's sidebar for that contact
+        db.ref(`user_chats/${currentUser}/${targetId}`).update({
+            lastMsg: preview,
+            time: Date.now()
+        });
+
+        // Update recipient's sidebar (so they see the new chat)
+        db.ref(`user_chats/${targetId}/${currentUser}`).update({
+            lastMsg: "📨 Pesan diteruskan",
+            time: Date.now(),
+            unread: 1 // Increment unread for them
+        });
+
+        showToast(`Diteruskan ke ${targetName}`);
+        closeForwardModal();
+    });
+}
+
+function handleCopy() { 
+    closeContextMenu();
+    let txt = "";
+    try {
+        if(selectedMsgData.text.startsWith("IMG:") || selectedMsgData.text.startsWith("VO:IMG:")) txt = "[Gambar]";
+        else if(selectedMsgData.text.startsWith("TYPE:VN:")) txt = "[Pesan Suara]";
+        else txt = decryptData(selectedMsgData.text);
+    } catch(e) { txt = selectedMsgData.text; }
+    
+    navigator.clipboard.writeText(txt);
+    showToast("Disalin!");
+}
+
+function handleEdit() {
+    closeContextMenu();
+    isEditing = true;
+    const textInput = document.getElementById("text");
+    
+    if(selectedMsgData.text.startsWith("IMG:") || selectedMsgData.text.startsWith("TYPE:VN:") || selectedMsgData.text.startsWith("VO:IMG:") || selectedMsgData.text.startsWith("CALL_JITSI:")) {
+        showToast("Hanya teks yang bisa diedit");
+        return;
+    }
+
+    textInput.value = decryptData(selectedMsgData.text);
+    textInput.focus();
+    showToast("Mode Edit Aktif");
+}
+
+function handleDelete() {
+    closeContextMenu(); 
+    const now = Date.now();
+    const isMe = selectedMsgData.from === currentUser; 
+    const canDeleteEveryone = isMe && (now - selectedMsgData.time < 172800000); // 48 hours window
+    
+    const sheet = document.getElementById("deleteSheet");
+    const btnDelEveryone = document.getElementById("btnDeleteEveryone");
+    
+    btnDelEveryone.style.display = canDeleteEveryone ? "block" : "none";
+    sheet.style.display = "flex";
+}
+
+function closeDeleteSheet() { document.getElementById("deleteSheet").style.display = "none"; }
+
+function confirmDeleteEveryone() {
+    // Update Firebase
+    db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({ 
+        deleted: true, 
+        text: encryptData("🚫 Pesan ini telah dihapus"),
+        replyTo: null 
+    });
+    closeDeleteSheet();
+    showToast("Dihapus untuk semua");
+    
+    // Update UI immediately
+    const el = document.getElementById("msg-wrap-" + selectedMsgId);
+    if(el) {
+        const msgBubble = el.querySelector(".msg");
+        if(msgBubble) msgBubble.innerText = "🚫 Pesan ini telah dihapus";
+    }
+}
+
+function confirmDeleteMe() {
+    // Remove from DOM only (Local deletion)
+    const el = document.getElementById("msg-wrap-" + selectedMsgId);
+    if(el) el.remove();
+    closeDeleteSheet();
+    showToast("Dihapus untuk Anda");
+}
+
+
+/* --- UTILS --- */
 
 function openLightbox(url) { 
     document.getElementById("imageLightbox").style.display = 'flex'; 
@@ -1952,12 +2285,8 @@ function processAddFriend() {
     db.ref("users/" + id).once("value", s => {
         if(s.exists()) {
             const u = s.val();
-            // 1. Tambahkan ke daftar chat saya
             db.ref(`user_chats/${currentUser}/${id}`).set({ lastMsg: "", time: Date.now() }).then(() => {
-                // 2. Tambahkan ke daftar chat dia (agar dia bisa melihat chat baru)
                 db.ref(`user_chats/${id}/${currentUser}`).set({ lastMsg: "", time: Date.now() });
-                
-                // 3. Buka Chat Langsung
                 closeAddFriend();
                 const photo = u.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
                 const name = u.username || id;
@@ -1983,63 +2312,7 @@ function processCreateGroup() {
     });
 }
 
-// ... (Menu handlers) ...
-function handleReply() {
-    document.getElementById("msgMenu").style.display = "none";
-    if (!selectedMsgData) return;
-    replyData = { id: selectedMsgId, user: selectedMsgData.from, text: selectedMsgData.text };
-    document.getElementById("reply-preview").style.display = "block";
-    document.getElementById("reply-user").innerText = (replyData.user === currentUser) ? "Anda" : replyData.user;
-    document.getElementById("reply-text").innerText = decryptData(replyData.text);
-    document.getElementById("text").focus();
-}
-function scrollToMessage(msgId) {
-    const targetEl = document.getElementById("msg-wrap-" + msgId);
-    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    else showToast("Pesan tidak ditemukan");
-}
-function cancelReply() { replyData = null; document.getElementById("reply-preview").style.display = "none"; }
-function handleEdit() {
-    isEditing = true;
-    const textInput = document.getElementById("text");
-    textInput.value = decryptData(selectedMsgData.text);
-    textInput.focus();
-    showToast("Mode Edit Aktif");
-}
-function handleDelete() {
-    document.getElementById("msgMenu").style.display = "none"; 
-    const now = Date.now();
-    const isMe = selectedMsgData.from === currentUser; 
-    const canDeleteEveryone = isMe && (now - selectedMsgData.time < 172800000);
-    document.getElementById("btnDeleteEveryone").style.display = canDeleteEveryone ? "block" : "none";
-    document.getElementById("deleteSheet").style.display = "flex";
-}
-function confirmDeleteEveryone() {
-    db.ref(`chats/${currentChatId}/${selectedMsgId}`).update({ deleted: true, text: encryptData("🚫 Pesan ini telah dihapus"), replyTo: null });
-    closeDeleteSheet();
-    showToast("Dihapus untuk semua");
-}
-function confirmDeleteMe() {
-    const el = document.getElementById("msg-wrap-" + selectedMsgId);
-    if(el) el.remove();
-    closeDeleteSheet();
-    showToast("Dihapus untuk Anda");
-}
-function closeDeleteSheet() { document.getElementById("deleteSheet").style.display = "none"; }
-function handleCopy() { const txt = decryptData(selectedMsgData.text); navigator.clipboard.writeText(txt); showToast("Disalin!"); }
-function handleForward() {
-    document.getElementById("msgMenu").style.display = "none";
-    const targetId = prompt("Masukkan User ID tujuan:");
-    if (!targetId || targetId.trim() === "") return;
-    const isGrp = targetId.startsWith("GROUP_");
-    const targetChatId = isGrp ? targetId : [currentUser, targetId].sort().join("_");
-    db.ref("chats/" + targetChatId).push({ from: currentUser, text: selectedMsgData.text, time: Date.now(), seen: false, forwarded: true }).then(() => {
-        showToast("Teruskan ke " + targetId);
-    });
-}
-function closeContextMenu() { document.getElementById("msgMenu").style.display = 'none'; }
-
-// (Recording and other functions remain similar to original logic)
+/* --- RECORDING --- */
 async function handleStart(e) {
     if (e.cancelable) e.preventDefault();
     startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
@@ -2074,6 +2347,7 @@ async function handleStart(e) {
         startTimer();
     } catch (err) { alert("Akses mic ditolak."); toggleRecordingUI(false); }
 }
+
 function toggleRecordingUI(isRecording) {
     const normalInput = document.getElementById("normal-input");
     const recordingUI = document.getElementById("recording-ui");
@@ -2094,6 +2368,7 @@ function toggleRecordingUI(isRecording) {
         document.getElementById("micButton").style.color = '';
     }
 }
+
 function startTimer() {
     let sec = 0, min = 0; 
     const timerDisplay = document.getElementById('record-timer');
@@ -2104,6 +2379,7 @@ function startTimer() {
         timerDisplay.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; 
     }, 1000);
 }
+
 function handleMove(e) {
     if (!mediaRecorder || mediaRecorder.state !== "recording") return;
     let currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
@@ -2117,6 +2393,7 @@ function handleMove(e) {
         if(instruction) { instruction.innerHTML = "<i class='fas fa-chevron-left'></i> Geser Batal"; instruction.style.color = "#888"; }
     }
 }
+
 function handleStop() {
     if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop(); 
     else toggleRecordingUI(false); 
@@ -2145,6 +2422,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
+/* --- CALL --- */
 function startJitsi(type) {
     if (!currentChatId) { showToast("Buka chat dulu!"); return; }
     const roomName = type === 'video' ? `Video_${Date.now()}` : `Audio_${Date.now()}`;
@@ -2192,6 +2470,8 @@ function hideCallOverlay() {
 }
 function acceptCall() { if (currentCallRoom && currentCallType) { hideCallOverlay(); joinVideoCall(currentCallRoom, currentCallType); } }
 function rejectCall() { hideCallOverlay(); showToast("Panggilan ditolak"); }
+
+/* --- IMAGE --- */
 function sendImage(input) {
     if(!input.files[0]) return;
     const reader = new FileReader();
