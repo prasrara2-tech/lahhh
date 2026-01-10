@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Group Info - GoChat</title>
+    <title>Grup Info - GoChat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -11,16 +11,15 @@
     <style>
         :root {
             --bg: #0a0a0a;
-            --card: rgba(255,255,255, 0.03);
-            --border: rgba(255,255,255, 0.08);
+            --card: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
             --accent: #d4a373;
             --super-color: #FFD700;
-            --officer-color: #0084FF;
+            --off-color: #0084FF;
             --danger: #FF3B30;
-            --modal-overlay: rgba(0,0,0,0.85);
         }
 
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; -webkit-tap-highlight-color: transparent; min-height: 100vh; padding-bottom: 20px;}
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; -webkit-tap-highlight-color: transparent; }
         .container { width: 100%; max-width: 480px; margin: auto; padding: 20px; box-sizing: border-box; }
         
         /* Profile Header */
@@ -32,8 +31,7 @@
         .group-name-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
         .group-name-box h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
         
-        .bio-section { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 20px; text-align: left; cursor: pointer; transition: background 0.2s; }
-        .bio-section:hover { background: rgba(255,255,255,0.05); }
+        .bio-section { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 20px; text-align: left; cursor: pointer; }
         .bio-label { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; opacity: 0.8; }
         .bio-text { font-size: 13px; color: #ccc; margin: 0; line-height: 1.5; }
 
@@ -45,128 +43,28 @@
         .m-name { font-weight: 700; font-size: 15px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .m-id { font-size: 11px; color: #555; font-weight: 600; }
 
-        /* BADGES & ACTION BUTTONS */
+        /* BADGES & ACTION BUTTONS (MENYAMPING) */
         .badge-row { display: flex; align-items: center; gap: 8px; }
         .badge { font-size: 10px; padding: 5px 10px; border-radius: 7px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
         .bg-super { background: var(--super-color) !important; color: #000 !important; }
-        .bg-officer { background: var(--officer-color) !important; color: #fff !important; }
+        .bg-officer { background: var(--off-color) !important; color: #fff !important; }
         
         .btn-action { padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; border: 1px solid transparent; transition: all 0.2s; }
-        .btn-promote { background: rgba(0, 132, 255, 0.1); color: var(--officer-color); border-color: rgba(0,132,255,0.3); }
-        .btn-promote:active { background: rgba(0, 132, 255, 0.2); }
+        .btn-promote { background: rgba(0, 132, 255, 0.1); color: var(--off-color); border-color: rgba(0,132,255,0.3); }
         .btn-demote { background: rgba(255, 59, 48, 0.1); color: var(--danger); border-color: rgba(255,59,48,0.3); }
-        .btn-demote:active { background: rgba(255, 59, 48, 0.2); }
 
-        /* ADMIN PANEL & INVITE UI */
+        /* Admin Controls */
         .admin-panel { background: rgba(212, 163, 115, 0.04); padding: 20px; border-radius: 25px; border: 1px dashed var(--accent); margin-top: 30px; display: none; }
-        
-        .invite-mode-switch { display: flex; gap: 10px; margin-bottom: 15px; background: #121212; padding: 5px; border-radius: 10px; }
-        .mode-btn { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: #666; font-weight: 600; font-size: 12px; cursor: pointer; }
-        .mode-btn.active { background: var(--accent); color: #000; }
         
         input { width: 100%; background: #121212; border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; margin-bottom: 12px; box-sizing: border-box; outline: none; font-family: inherit; }
         .btn-submit { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 12px; }
-
-        /* INVITE LIST UI */
-        .invite-contact-list { 
-            display: none; 
-            margin-top: 15px; 
-            border-top: 1px solid var(--border); 
-            padding-top: 15px; 
-            max-height: 250px; 
-            overflow-y: auto; 
-        }
-        .invite-search-box {
-            display: flex;
-            align-items: center;
-            background: #121212;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 15px;
-            margin-bottom: 10px;
-        }
-        .invite-search-box i { color: var(--accent); margin-right: 10px; }
-        .invite-search-box input {
-            background: transparent; 
-            border: none; 
-            padding: 0; 
-            margin: 0;
-            width: 100%;
-        }
-        .invite-item {
-            display: flex; 
-            align-items: center; 
-            padding: 10px; 
-            border-radius: 12px; 
-            margin-bottom: 8px; 
-            background: var(--card); 
-            border: 1px solid transparent; 
-            cursor: pointer; 
-            transition: 0.2s;
-        }
-        .invite-item:hover { background: rgba(255,255,255,0.05); border-color: var(--border); }
-        .invite-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px; }
-        .invite-info { flex: 1; }
-        .invite-name { font-size: 14px; font-weight: 600; color: #fff; display: block; }
-        .invite-id { font-size: 10px; color: #666; }
-
-        /* PREVIEW MODAL */
-        #previewModal {
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background: var(--modal-overlay); 
-            backdrop-filter: blur(5px); 
-            z-index: 5000; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
-        .preview-card {
-            background: #1a1a1a; 
-            width: 85%; 
-            max-width: 320px; 
-            border-radius: 25px; 
-            text-align: center; 
-            border: 1px solid var(--border); 
-            padding: 30px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
-        .preview-avatar { 
-            width: 80px; height: 80px; border-radius: 50%; 
-            object-fit: cover; border: 3px solid var(--accent); 
-            margin-bottom: 15px; 
-        }
-        .preview-name { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
-        .preview-label { font-size: 12px; color: #888; margin-bottom: 20px; }
-        
-        .preview-actions { display: flex; gap: 10px; }
-        .btn-preview {
-            flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; text-transform: uppercase;
-        }
-        .btn-preview.cancel { background: #333; color: #fff; }
-        .btn-preview.confirm { background: var(--accent); color: #000; }
-
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 800; display: none; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <div id="toast"></div>
-<div id="previewModal" onclick="closePreviewModal(event)">
-    <div class="preview-card" onclick="event.stopPropagation()">
-        <img id="previewImg" src="" class="preview-avatar">
-        <div id="previewName" class="preview-name">Nama User</div>
-        <div class="preview-label">Apakah Anda yakin ingin menambahkan anggota ini?</div>
-        <div class="preview-actions">
-            <button class="btn-preview cancel" onclick="closePreviewModal()">Batal</button>
-            <button class="btn-preview confirm" onclick="confirmAddUser()">Ya, Tambah</button>
-        </div>
-    </div>
-</div>
 
 <div class="container">
     <div class="header" style="margin-bottom:25px;">
@@ -194,34 +92,13 @@
     <div class="section-title">Anggota Grup</div>
     <div id="memberListContainer"></div>
 
-    <!-- ADMIN PANEL UPGRADE -->
     <div id="adminPanel" class="admin-panel">
-        <div class="bio-label" style="margin-bottom:10px; font-size:14px;">Manajemen Anggota</div>
-        
-        <div class="invite-mode-switch">
-            <button class="mode-btn active" id="btnModeManual" onclick="switchInviteMode('manual')">Input ID</button>
-            <button class="mode-btn" id="btnModeContact" onclick="switchInviteMode('contact')">Pilih Kontak</button>
-        </div>
-
-        <!-- MODE 1: MANUAL INPUT -->
-        <div id="manualInviteContainer">
-            <input type="text" id="newUserId" placeholder="Masukkan ID Pengguna...">
-            <button class="btn-submit" onclick="inviteUserManual()">Undang Sekarang</button>
-        </div>
-
-        <!-- MODE 2: SELECT CONTACTS -->
-        <div id="contactInviteContainer" style="display: none;">
-            <div class="invite-search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="inviteSearch" placeholder="Cari kontak..." oninput="filterInviteContacts()">
-            </div>
-            <div id="inviteList" class="invite-contact-list">
-                <!-- Contacts injected via JS -->
-            </div>
-        </div>
+        <div class="bio-label" style="margin-bottom:10px;">Tambah Anggota</div>
+        <input type="text" id="newUserId" placeholder="Masukkan ID Pengguna...">
+        <button class="btn-submit" onclick="inviteUser()">Undang Sekarang</button>
     </div>
 
-    <!-- TOMBOL KELUAR GRUP DIHAPUS SESUAI PERMINTAAN -->
+    <!-- TOMBOL KELUAR GRUP SUDAH DIHAPUS DISINI -->
 </div>
 
 <script>
@@ -240,48 +117,31 @@
 
     let gData = null;
     let myRole = "member";
-    let inviteMode = "manual"; // 'manual' or 'contact'
-    let selectedContactForInvite = null;
-    let globalContactList = {}; // Cache contacts for invite list
 
     function init() {
         if (!gId || !myId) return;
 
-        // Load Group Info
-        db.ref(`groups/${gId}`).on("value", snap => {
-            gData = snap.val();
-            if (!gData) return;
-            
-            // Check Role
-            myRole = (gData.admin === myId) ? "superuser" : "member";
-            // Note: Officer check happens inside the member listener if needed, but for simplicity we assume Admins can invite. 
-            // If you want Officers to invite too, modify logic here.
-
-            updateUI();
-        });
-
-        // Load Members & Check my existence
         db.ref(`group_members/${gId}/${myId}`).on("value", rSnap => {
             const role = rSnap.val();
-            if (role) myRole = role === "officer" ? "officer" : myRole;
-            
-            // Only show admin panel if Superuser or Officer (Optional, usually only Admin manages invites, but let's allow Officers too for this prompt)
-            if (myRole === 'superuser' || myRole === 'officer') {
-                document.getElementById("adminPanel").style.display = "block";
-                document.getElementById("camIcon").style.display = "flex";
-                document.getElementById("editNameBtn").style.display = "block";
+            db.ref(`groups/${gId}`).on("value", snap => {
+                gData = snap.val();
+                if (!gData) return;
                 
-                // Pre-load contacts for invite list to be ready
-                loadUserChatsForInvite();
-            }
-            loadMembers();
+                // Cek Role: Super User (Admin), Officer, atau Member
+                myRole = (gData.admin === myId) ? "superuser" : (role === "officer" ? "officer" : "member");
+                
+                document.getElementById("gName").innerText = gData.name;
+                document.getElementById("gBio").innerText = gData.bio || "Ketuk untuk menambah deskripsi grup...";
+                document.getElementById("gPhoto").src = gData.photo || "https://cdn-icons-png.flaticon.com/512/615/615075.png";
+                
+                if (myRole !== 'member') {
+                    document.getElementById("adminPanel").style.display = "block";
+                    document.getElementById("camIcon").style.display = "flex";
+                    document.getElementById("editNameBtn").style.display = "block";
+                }
+                loadMembers();
+            });
         });
-    }
-
-    function updateUI() {
-        document.getElementById("gName").innerText = gData.name;
-        document.getElementById("gBio").innerText = gData.bio || "Klik untuk menambah deskripsi grup...";
-        document.getElementById("gPhoto").src = gData.photo || "https://cdn-icons-png.flaticon.com/512/615/615075.png";
     }
 
     function loadMembers() {
@@ -291,179 +151,36 @@
             snap.forEach(m => {
                 const uid = m.key;
                 const role = m.val();
-                renderMember(uid, role, container);
+                db.ref(`users/${uid}`).once("value", uSnap => {
+                    const u = uSnap.val();
+                    const isSU = (uid === gData.admin);
+                    const isOff = (role === "officer");
+                    
+                    const item = document.createElement("div");
+                    item.className = "member-item";
+                    item.innerHTML = `
+                        <img src="${u?.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
+                        <div class="member-info">
+                            <span class="m-name">${u?.username || uid}</span>
+                            <span class="m-id">@${uid}</span>
+                        </div>
+                        <div class="badge-row">
+                            ${isSU ? '<span class="badge bg-super">SUPER USER</span>' : ''}
+                            ${isOff ? '<span class="badge bg-officer">OFFICER</span>' : ''}
+                            ${myRole === 'superuser' && !isSU ? 
+                                (!isOff ? `<button class="btn-action btn-promote" onclick="updateRole('${uid}','officer')">Promote</button>` : 
+                                         `<button class="btn-action btn-demote" onclick="updateRole('${uid}',true)">Demote</button>`) 
+                            : ''}
+                        </div>`;
+                    container.appendChild(item);
+                });
             });
         });
     }
 
-    function renderMember(uid, role, container) {
-        db.ref(`users/${uid}`).once("value", uSnap => {
-            const u = uSnap.val();
-            const isSU = (uid === gData.admin);
-            const isOff = (role === "officer");
-            
-            // Don't show in member list if not in user_chats (optional, but good for privacy in this context if we only show active chats)
-            // But for Group Profile, usually show all members.
-            
-            const item = document.createElement("div");
-            item.className = "member-item";
-            item.innerHTML = `
-                <img src="${u?.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
-                <div class="member-info">
-                    <span class="m-name">${u?.username || uid}</span>
-                    <span class="m-id">@${uid}</span>
-                </div>
-                <div class="badge-row">
-                    ${isSU ? '<span class="badge bg-super">SUPER USER</span>' : ''}
-                    ${isOff ? '<span class="badge bg-officer">OFFICER</span>' : ''}
-                    ${myRole === 'superuser' && !isSU && role !== 'superuser' && !isOff ? 
-                        `<button class="btn-action btn-promote" onclick="updateRole('${uid}','officer')">Promote</button>` : ''}
-                </div>`;
-            container.appendChild(item);
-        });
-    }
-
-    // --- INVITE LOGIC (UPDATED) ---
-
-    function switchInviteMode(mode) {
-        inviteMode = mode;
-        document.getElementById("btnModeManual").classList.toggle("active", mode === "manual");
-        document.getElementById("btnModeContact").classList.toggle("active", mode === "contact");
-        
-        if (mode === 'manual') {
-            document.getElementById("manualInviteContainer").style.display = "block";
-            document.getElementById("contactInviteContainer").style.display = "none";
-        } else {
-            document.getElementById("manualInviteContainer").style.display = "none";
-            document.getElementById("contactInviteContainer").style.display = "block";
-            filterInviteContacts(); // Show list
-        }
-    }
-
-    // Manual Input Invite
-    function inviteUserManual() {
-        const id = document.getElementById("newUserId").value.trim();
-        if(!id) return showToast("ID tidak boleh kosong!");
-        if(id === myId) return showToast("Tidak bisa mengundang diri sendiri!");
-        
-        // Check if user exists
-        db.ref("users/" + id).once("value", s => {
-            if(s.exists()){
-                processAddMember(id);
-            } else {
-                showToast("ID tidak ditemukan!");
-            }
-        });
-    }
-
-    // --- KONTAK LIST LOGIC ---
-
-    function loadUserChatsForInvite() {
-        if (globalContactList.length > 0) return; // Already cached
-
-        db.ref(`user_chats/${myId}`).once("value", snap => {
-            const data = snap.val();
-            if(!data) return;
-
-            // Convert to array of IDs
-            const ids = Object.keys(data);
-            const fetchPromises = [];
-
-            ids.forEach(id => {
-                if (id.startsWith("GROUP_")) return; // Exclude groups
-                fetchPromises.push(
-                    db.ref("users/" + id).once("value")
-                        .then(uSnap => {
-                            const u = uSnap.val();
-                            if (u) globalContactList[id] = u;
-                        })
-                );
-            });
-
-            Promise.all(fetchPromises).then(() => {
-                filterInviteContacts(); // Render initial list
-            });
-        });
-    }
-
-    function filterInviteContacts() {
-        const listEl = document.getElementById("inviteList");
-        const query = document.getElementById("inviteSearch").value.toLowerCase();
-        listEl.innerHTML = "";
-
-        const ids = Object.keys(globalContactList);
-        ids.forEach(id => {
-            const u = globalContactList[id];
-            const name = (u.username || "").toLowerCase();
-            const isAlreadyMember = false; // We can check this dynamically or assume. For UI let's just list them.
-
-            if (name.includes(query)) {
-                const el = document.createElement("div");
-                el.className = "invite-item";
-                el.onclick = () => {
-                    selectedContactForInvite = id;
-                    showInvitePreview(id);
-                };
-                el.innerHTML = `
-                    <img src="${u.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}">
-                    <div class="invite-info">
-                        <span class="invite-name">${u.username}</span>
-                        <span class="invite-id">@${id}</span>
-                    </div>
-                `;
-                listEl.appendChild(el);
-            }
-        });
-    }
-
-    // --- PREVIEW & CONFIRMATION ---
-
-    function showInvitePreview(uid) {
-        const u = globalContactList[uid];
-        if (!u) return;
-
-        document.getElementById("previewImg").src = u.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-        document.getElementById("previewName").innerText = u.username;
-        document.getElementById("previewModal").style.display = "flex";
-    }
-
-    function closePreviewModal(e) {
-        if (e && e.target.closest('.preview-card')) return;
-        document.getElementById("previewModal").style.display = "none";
-        selectedContactForInvite = null;
-    }
-
-    function confirmAddUser() {
-        const id = selectedContactForInvite;
-        if (!id) return;
-        
-        processAddMember(id);
-        closePreviewModal();
-    }
-
-    function processAddMember(uid) {
-        // Add to group members
-        db.ref(`group_members/${gId}/${uid}`).set(true).then(() => {
-            // Update the recipient's sidebar (if they don't have the group)
-            db.ref(`user_chats/${uid}/${gId}`).set({
-                lastMsg: "Grup Baru / Ditambahkan",
-                time: Date.now()
-            });
-            
-            showToast("Anggota berhasil ditambahkan!");
-            document.getElementById("newUserId").value = "";
-            
-            // Refresh member list
-            loadMembers(); 
-            if(inviteMode === 'contact') filterInviteContacts();
-        });
-    }
-
-
-    // --- OTHER ACTIONS (Keep Existing Logic) ---
-
+    // ACTIONS
     function changeGroupName() {
-        if (myRole !== 'superuser') return;
+        if (myRole === 'member') return;
         const n = prompt("Ganti Nama Grup:", gData.name);
         if(n && n.trim() !== "") db.ref(`groups/${gId}`).update({ name: n.trim() });
     }
@@ -487,6 +204,18 @@
         if(confirm("Apakah Anda yakin ingin mengubah jabatan anggota ini?")) {
             db.ref(`group_members/${gId}/${uid}`).set(val); 
         }
+    }
+
+    function inviteUser() {
+        const id = document.getElementById("newUserId").value.trim();
+        if(!id) return;
+        db.ref(`users/${id}`).once("value", s => {
+            if(s.exists()){
+                db.ref(`group_members/${gId}/${id}`).set(true);
+                showToast("Berhasil ditambahkan!");
+                document.getElementById("newUserId").value = "";
+            } else showToast("ID tidak ditemukan!");
+        });
     }
 
     function showToast(m) {
