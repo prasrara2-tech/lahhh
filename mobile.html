@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0a">
-    <title>GoChat Pro - Read Receipts & Status</title>
+    <title>GoChat Pro - Smooth Status & Auto-Friend</title>
 
     <!-- LIBRARIES -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -24,7 +24,7 @@
         --glass-thick: rgba(15, 15, 15, 0.98);
         --glass-border: rgba(255,255,255, 0.08);
         --accent: #d4a373; 
-        --accent-bright: #e6b885; /* Lighter accent for better visibility */
+        --accent-bright: #e6b885; 
         --text-main: #ffffff;
         --text-muted: #a0a0a0;
         --online: #2ecc71;
@@ -146,7 +146,6 @@
         background: var(--glass-white); 
     }
     
-    /* SIDEBAR AVATAR WRAPPER */
     .avatar-wrapper {
         position: relative;
         width: 54px; 
@@ -162,7 +161,6 @@
         pointer-events: none;
     }
 
-    /* Unread Badge */
     .user-badge {
         position: absolute;
         top: -4px;
@@ -183,7 +181,6 @@
         border: 2px solid var(--bg-base);
     }
 
-    /* Online Status Dot */
     .status-dot {
         position: absolute;
         bottom: 2px;
@@ -195,6 +192,7 @@
         border: 2px solid var(--bg-base);
         z-index: 2;
         display: none; 
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
     .user-info { 
@@ -228,7 +226,6 @@
         gap: 6px;
     }
 
-    /* Sidebar Ticks */
     .sidebar-tick {
         font-size: 10px;
         color: #555;
@@ -273,7 +270,6 @@
         padding-top: var(--safe-top); 
     }
     
-    /* WELCOME SCREEN */
     #welcome-screen {
         position: absolute; 
         inset: 0; 
@@ -362,14 +358,14 @@
     /* CALL MESSAGE UI */
     .call-msg {
         display: flex;
-        align-items: center;
+        align-items: center,
         gap: 12px,
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 10px 12px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.1),
+        border: 1px solid rgba(255, 255, 255, 0.1),
+        padding: 10px 12px,
+        border-radius: 12px,
+        cursor: pointer,
+        transition: all 0.2s ease,
         width: 100%;
         margin: 0;
     }
@@ -396,7 +392,6 @@
         margin-right: 2px;
     }
     
-    /* Message Read Status (Blue Checks) */
     .msg-status {
         font-size: 11px;
         color: rgba(255,255,255,0.7);
@@ -645,6 +640,16 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
 
+    /* STATUS ANIMATION CSS */
+    .status-anim {
+        animation: slideStatus 0.4s ease-out;
+    }
+    
+    @keyframes slideStatus {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     .modal {
         display: none; 
         position: fixed; 
@@ -787,17 +792,17 @@
     }
     .lightbox-vo-overlay {
         position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 6002;
-        color: white;
-        text-align: center;
-        cursor: pointer;
+        inset: 0,
+        background: rgba(0, 0, 0, 0.85),
+        backdrop-filter: blur(10px),
+        display: flex,
+        flex-direction: column,
+        align-items: center,
+        justify-content: center,
+        z-index: 6002,
+        color: white,
+        text-align: center,
+        cursor: pointer,
         transition: opacity 0.3s;
     }
     .lightbox-vo-overlay.hidden { opacity: 0; pointer-events: none; }
@@ -1030,6 +1035,7 @@
             </div>
             <div id="chat-info-block" style="flex:1; margin-left:12px; min-width:0; cursor:pointer;" onclick="goToProfile()">
                 <b id="chatName" style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:16px;">...</b>
+                <!-- Status Text container -->
                 <div id="chatStatus" style="font-size:12px; font-weight:500; color: var(--text-muted); display:flex; align-items:center; gap:4px;">...</div>
             </div>
             <div style="display:flex; gap:22px; color:var(--accent); font-size:20px;">
@@ -1081,9 +1087,10 @@
 
 <div id="addFriendModal" class="modal">
     <div class="modal-content">
-        <h3 style="color:var(--accent); margin-top:0;">Tambah Teman</h3>
+        <h3 style="color:var(--accent); margin-top:0;">Mulai Chat Baru</h3>
+        <p style="color:#888; font-size:12px;">Masukkan ID User untuk memulai percakapan.</p>
         <input type="text" id="friendInput" placeholder="ID User (Contoh: Budi_1234)" style="width:100%; padding:14px; border-radius:12px; background:#000; border:1px solid #333; color:white; margin:15px 0; text-align:center;">
-        <button onclick="processAddFriend()" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:black;">TAMBAH KONTAK</button>
+        <button onclick="processAddFriend()" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:black;">LANJUT</button>
         <p onclick="closeAddFriend()" style="margin-top:20px; color:#666; cursor:pointer; font-size:14px;">Batal</p>
     </div>
 </div>
@@ -1301,7 +1308,6 @@ function renderEmojiGrid(category) {
 
 // Function to update sidebar tick (Read Receipt)
 function updateSidebarTick(partnerId, isSeen) {
-    // For 1-on-1 chats
     const tickId = isGroup ? `tick-GROUP_${currentPartnerId}` : `tick-${partnerId}`;
     const tickEl = document.getElementById(tickId);
     
@@ -1430,7 +1436,6 @@ function updateOrAddContact(id, info) {
                             statusEl.innerText = "Online";
                             statusEl.style.color = "var(--online)";
                         } else if(u?.lastSeen) {
-                            // Optional: Show last seen in sidebar? Might clutter. Keeping it clean.
                             statusEl.innerText = ""; 
                         }
                     }
@@ -1449,7 +1454,6 @@ function updateOrAddContact(id, info) {
                 if(u) {
                     if(u.online) {
                         if(dotEl) dotEl.style.display = "block";
-                        // Only show "Online" if not typing
                         if(statusEl && !statusEl.innerText.includes("mengetik")) {
                             statusEl.innerText = "Online";
                             statusEl.style.color = "var(--online)";
@@ -1545,14 +1549,26 @@ function openChat(pId, photo, name, grp = false) {
     const chatAvatarEl = document.getElementById("chatAvatar");
     if(chatAvatarEl) chatAvatarEl.src = photo || (grp ? "https://cdn-icons-png.flaticon.com/512/615/615075.png" : "https://cdn-icons-png.flaticon.com/512/149/149071.png");
 
-    // --- CHAT HEADER STATUS LOGIC (Online / Last Seen) ---
-    
-    // Remove previous listeners (naive cleanup by recreating reference path)
-    // Note: For perfect cleanup in vanilla JS without a library, store references. 
-    // Here we just overwrite logic.
+    // --- CHAT HEADER STATUS LOGIC (Online / Last Seen) WITH ANIMATION ---
     
     const statusEl = document.getElementById("chatStatus");
     const headerDot = document.getElementById("header-status-dot");
+    
+    // Helper function to animate status change
+    function setStatus(text, color, isOnlineBool) {
+        if(statusEl.innerText !== text) {
+            statusEl.classList.remove("status-anim");
+            void statusEl.offsetWidth; // Trigger reflow
+            statusEl.innerText = text;
+            statusEl.style.color = color;
+            statusEl.classList.add("status-anim");
+        }
+        if(isOnlineBool) {
+            if(headerDot) headerDot.style.display = "block";
+        } else {
+            if(headerDot) headerDot.style.display = "none";
+        }
+    }
 
     if(!grp) {
         // 1. Listen to Online Status
@@ -1560,29 +1576,25 @@ function openChat(pId, photo, name, grp = false) {
         onlineRef.on('value', snap => {
             const isOnline = snap.val();
             if(isOnline) {
-                statusEl.innerHTML = `<i class="fas fa-circle" style="font-size:8px; color:var(--online);"></i> Online`;
-                statusEl.style.color = "var(--online)";
-                if(headerDot) headerDot.style.display = "block";
+                setStatus(`<i class="fas fa-circle" style="font-size:8px; color:var(--online);"></i> Online`, "var(--online)", true);
             } else {
-                if(headerDot) headerDot.style.display = "none";
-                // Trigger last seen fetch immediately when going offline
+                setStatus("", "#888", false); // Will be filled by Last Seen listener
                 db.ref(`users/${pId}/lastSeen`).once('value', s => {
-                    if(!snap.val()) { // double check still offline
+                    if(!snap.val()) { 
                         const ls = s.val();
-                        statusEl.innerText = ls ? formatLastSeen(ls) : "Offline";
-                        statusEl.style.color = "#888";
+                        setStatus(ls ? formatLastSeen(ls) : "Offline", "#888", false);
                     }
                 });
             }
         });
 
-        // 2. Listen to Last Seen changes (e.g. user was offline, comes online, goes offline again)
+        // 2. Listen to Last Seen changes
         const lastSeenRef = db.ref(`users/${pId}/lastSeen`);
         lastSeenRef.on('value', snap => {
-            const isOnline = (document.getElementById("chatStatus").innerText.includes("Online"));
+            const isOnline = (statusEl.innerText.includes("Online"));
             if(!isOnline) {
                 const ls = snap.val();
-                statusEl.innerText = ls ? formatLastSeen(ls) : "";
+                setStatus(ls ? formatLastSeen(ls) : "", "#888", false);
             }
         });
         
@@ -1591,8 +1603,7 @@ function openChat(pId, photo, name, grp = false) {
         typingRef.on('value', snap => {
              const isTyping = snap.exists();
              if(isTyping) {
-                 statusEl.innerText = "Sedang mengetik...";
-                 statusEl.style.color = "var(--accent)";
+                 setStatus("Sedang mengetik...", "var(--accent)", false);
              } else {
                  // Revert to status check
                  onlineRef.once('value');
@@ -1935,14 +1946,26 @@ function closeAddFriend() { document.getElementById("addFriendModal").style.disp
 function processAddFriend() {
     const id = document.getElementById("friendInput").value.trim();
     if(!id) return showToast("ID tidak boleh kosong!");
-    if(id === currentUser) return showToast("Tidak bisa tambah diri sendiri!");
+    if(id === currentUser) return showToast("Tidak bisa chat dengan diri sendiri!");
+    
+    showToast("Mencari user...");
     db.ref("users/" + id).once("value", s => {
         if(s.exists()) {
-            db.ref(`user_chats/${currentUser}/${id}`).update({ lastMsg: "Kontak baru", time: Date.now() });
-            db.ref(`user_chats/${id}/${currentUser}`).update({ lastMsg: "Permintaan baru", time: Date.now() }).then(() => {
-                showToast("Berhasil tambah teman!"); closeAddFriend();
+            const u = s.val();
+            // 1. Tambahkan ke daftar chat saya
+            db.ref(`user_chats/${currentUser}/${id}`).set({ lastMsg: "", time: Date.now() }).then(() => {
+                // 2. Tambahkan ke daftar chat dia (agar dia bisa melihat chat baru)
+                db.ref(`user_chats/${id}/${currentUser}`).set({ lastMsg: "", time: Date.now() });
+                
+                // 3. Buka Chat Langsung
+                closeAddFriend();
+                const photo = u.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                const name = u.username || id;
+                openChat(id, photo, name, false);
             });
-        } else { alert("ID tidak ditemukan!"); }
+        } else { 
+            showToast("ID tidak ditemukan!"); 
+        }
     });
 }
 
