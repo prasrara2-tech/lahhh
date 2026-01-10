@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0a0a">
-    <title>GoChat Pro - Final Interaction</title>
+    <title>GoChat Pro - Sidebar Menu</title>
 
     <!-- LIBRARIES -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -200,17 +200,17 @@
         flex: 1; 
         min-width: 0; 
         display: flex;
-        flex-direction: column; /* Stack Name and Preview */
+        flex-direction: column; 
         justify-content: center;
-        gap: 2px; 
+        gap: 1px; /* Tight gap */
     }
     
     .user-row-top {
         display: flex; 
         justify-content: space-between; 
-        align-items: center;
+        align-items: center; 
         width: 100%;
-        margin-bottom: 0; 
+        margin-bottom: 1px; 
     }
     
     .user-row-top b { 
@@ -247,17 +247,25 @@
         font-weight: 500;
     }
 
-    /* Explicitly style preview span */
-    #status-text- {
-        font-size: 12px;
-        color: var(--accent);
-        font-weight: 600;
-        height: auto; 
-        min-height: 0;
+    /* Bottom Row for Sidebar */
+    .user-row-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         width: 100%;
-        line-height: 1.2;
+        height: 20px;
     }
-    
+
+    .pinned-badge {
+        font-size: 10px;
+        color: var(--accent);
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Explicitly style preview span */
     .user-info span { 
         font-size: 13px; 
         color: var(--text-muted); 
@@ -266,6 +274,7 @@
         white-space: nowrap; 
         overflow: hidden; 
         text-overflow: ellipsis; 
+        margin-top: 1px; /* Ensure it's below name */
     }
     
     /* CHAT AREA */
@@ -709,7 +718,7 @@
         .chat { width: 100%; }
     }
 
-    /* CONTEXT MENU UPDATE */
+    /* MESSAGE MENU UPDATE */
     .msg-context-menu {
         display: none; 
         position: fixed; 
@@ -726,12 +735,26 @@
         top: 50%;
     }
 
+    /* CONTACT MENU CSS */
+    .contact-context-menu {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        background: #1a1a1a;
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        width: 180px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        padding: 5px 0;
+    }
+
     .menu-item {
         padding: 12px 15px; font-size: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer;
     }
     .menu-item:hover { background: var(--glass-white); color: var(--accent); }
     .menu-item.danger { color: #ff5e5e; }
 
+    /* REPLY PREVIEW */
     #reply-preview {
         display: none; 
         padding: 10px 12px; 
@@ -767,42 +790,6 @@
     }
     .sheet-btn.danger { background: #ff4757; color: white; }
     .sheet-btn.cancel { background: #333; color: white; }
-
-    .context-menu {
-        position: fixed !important;
-        display: none;
-        background: #1a1a1a !important; 
-        border: 1px solid rgba(255,255,255,0.2) !important;
-        border-radius: 12px !important;
-        width: 180px !important;
-        z-index: 9999999 !important; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.9) !important;
-        overflow: hidden !important;
-        padding: 5px 0 !important;
-    }
-    .context-menu-item {
-        padding: 12px 16px !important;
-        font-size: 14px !important;
-        color: #ffffff !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-        cursor: pointer !important;
-        background: transparent !important;
-        transition: 0.2s;
-    }
-    .context-menu-item:hover { background: rgba(255,255,255,0.1) !important; }
-    .context-menu-item i { width: 20px !important; text-align: center !important; color: #d4af37 !important; }
-    .context-menu-item.danger { color: #ff5e5e !important; }
-    .context-menu-item.danger i { color: #ff5e5e !important; }
-
-    .blink { animation: blink-red 1s infinite; }
-    @keyframes blink-red { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-
-    @keyframes slideLeft {
-        0% { transform: translateX(0); opacity: 1; }
-        100% { transform: translateX(-15px); opacity: 0.2; }
-    }
 
     /* LIGHTBOX & VIEW ONCE */
     #imageLightbox {
@@ -1038,6 +1025,15 @@
         <div id="forwardList"></div>
     </div>
 
+    <!-- CONTACT MENU (For Sidebar Hold/RightClick) -->
+    <div id="contactMenu" class="contact-context-menu">
+        <div class="menu-item" onclick="togglePinFromMenu()"><i class="fa fa-thumbtack"></i> Pin Chat</div>
+        <div class="menu-item" onclick="shareContactProfile()"><i class="fa fa-share"></i> Share Profile</div>
+        <hr style="border:0; border-top:1px solid #333; margin:0;">
+        <div class="menu-item danger" onclick="deleteContactMenu('me')"><i class="fa fa-trash"></i> Hapus untuk Saya</div>
+        <div class="menu-item danger" onclick="deleteContactMenu('everyone')"><i class="fa fa-ban"></i> Hapus untuk Semua</div>
+    </div>
+
     <div id="videoCallModal">
         <div style="position: absolute; top: 20px; right: 20px; z-index: 10;">
             <button onclick="endVideoCall()" style="background: #ff5e5e; color: white; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold;"><i class="fas fa-phone-slash"></i> Tutup</button>
@@ -1197,7 +1193,7 @@
     </div>
 </div>
 
-<!-- CONTEXT MENU & ACTIONS -->
+<!-- MESSAGE MENU -->
 <div id="msgMenu" class="msg-context-menu">
     <div class="menu-item" onclick="handleReply()"><i class="fa fa-reply"></i> Balas</div>
     <div class="menu-item" onclick="handleForward()"><i class="fa fa-share"></i> Teruskan</div>
@@ -1216,7 +1212,7 @@
     </div>
 </div>
 
-<div id="menuOverlay" onclick="closeContextMenu()"></div>
+<div id="menuOverlay" onclick="closeAllMenus()"></div>
 <div id="toast"></div>
 
 <script>
@@ -1268,6 +1264,7 @@ let vnBlob = null;
 let typingTimeout;
 let selectedMsgId = null;
 let selectedMsgData = null;
+let selectedContactId = null; // For contact menu
 let isEditing = false;
 let replyData = null; 
 let startX;
@@ -1280,7 +1277,7 @@ let isViewOnceEnabled = false;
 let viewOnceIgnoredKey = null; 
 let currentCallRoom = null; 
 let currentCallType = null;
-let globalContacts = {}; 
+let globalContacts = {}; // Stores contact info + pinned status
 let currentEmojiCategory = 'Smileys';
 let wakeLock = null;
 let viewOnceTimer = null;
@@ -1343,6 +1340,7 @@ async function initApp() {
     db.ref("users/" + currentUser + "/online").onDisconnect().set(false);
     db.ref("users/" + currentUser + "/lastSeen").onDisconnect().set(Date.now());
 
+    // Load Contacts (Now with Sorting Logic)
     loadContacts();
     setupEmoji(); 
     setupTypingListener();
@@ -1397,7 +1395,7 @@ function renderEmojiGrid(category) {
     });
 }
 
-// --- SIDEBAR & STATUS LOGIC ---
+// --- SIDEBAR & STATUS LOGIC (UPDATED WITH SORTING) ---
 
 function updateSidebarTick(partnerId, isSeen) {
     const tickId = isGroup ? `tick-GROUP_${currentPartnerId}` : `tick-${partnerId}`;
@@ -1421,18 +1419,37 @@ function formatLastSeen(timestamp) {
 }
 
 function loadContacts() {
-    db.ref(`user_chats/${currentUser}`).on("child_added", (snap) => {
-        const info = snap.val();
-        const id = snap.key;
-        if(!info) return;
-        updateOrAddContact(id, info);
+    db.ref(`user_chats/${currentUser}`).on("value", (snap) => {
+        const data = snap.val();
+        if(!data) {
+            document.getElementById("users").innerHTML = "";
+            return;
+        }
+        
+        // Clear list and re-render sorted
+        const list = document.getElementById("users");
+        list.innerHTML = "";
+        
+        const ids = Object.keys(data);
+        // Sort: Pinned first (true=1, false=0 -> desc), then Time (desc)
+        ids.sort((a, b) => {
+            const pinA = data[a].isPinned ? 1 : 0;
+            const pinB = data[b].isPinned ? 1 : 0;
+            if (pinA !== pinB) return pinB - pinA;
+            return data[b].time - data[a].time;
+        });
+
+        ids.forEach(id => {
+            const info = data[id];
+            if(!info) return;
+            renderContact(id, info);
+        });
     });
 
-    db.ref(`user_chats/${currentUser}`).on("child_changed", (snap) => {
-        const info = snap.val();
-        const id = snap.key;
-        if(!info) return;
-        updateOrAddContact(id, info);
+    // Listen for changes in individual contacts to update them live (no full re-sort needed)
+    db.ref(`user_chats/${currentUser}`).on("child_added", (snap) => {
+        // Handled by value listener above mostly, but we can use this for optimization if needed.
+        // For simplicity in this single file, the "value" listener on the root is enough for sorting.
     });
 
     db.ref(`user_chats/${currentUser}`).on("child_removed", (snap) => {
@@ -1442,138 +1459,141 @@ function loadContacts() {
     });
 }
 
-function updateOrAddContact(id, info) {
+function renderContact(id, info) {
     const list = document.getElementById("users");
-    if(!list) return;
-
-    let div = document.getElementById(`contact-${id}`);
     const isGrp = id.startsWith("GROUP_");
     const chatId = isGrp ? id : [currentUser, id].sort().join("_");
     
-    const processContact = () => {
-        const u = globalContacts[id];
-        const photo = u?.photo || (isGrp ? 'https://cdn-icons-png.flaticon.com/512/615/615075.png' : 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
-        const name = u?.name || u?.username || id;
-        const msgPreview = info.lastMsg || '...';
-        
-        let timeStr = "";
-        if(info.time) {
-            const d = new Date(info.time);
-            timeStr = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
-        }
-
-        const unreadCount = info.unread || 0;
-        const badgeHtml = unreadCount > 0 ? `<div class="user-badge" id="badge-${id}">${unreadCount}</div>` : "";
-
-        const statusDotHtml = (!isGrp && u?.online) ? `<div class="status-dot" id="dot-${id}" style="display:block"></div>` : "";
-
-        const tickHtml = (!isGrp) ? `<i id="tick-${id}" class="fas fa-check sidebar-tick"></i>` : "";
-
-        const htmlContent = `
-            <div class="avatar-wrapper">
-                <img src="${photo}">
-                ${statusDotHtml}
-                ${badgeHtml}
-            </div>
-            <div class="user-info">
-                <div class="user-row-top">
-                    <b>${name}</b>
-                    <div class="sidebar-meta">
-                        ${tickHtml}
-                        <span class="msg-time">${timeStr}</span>
-                    </div>
-                </div>
-                <div id="status-text-${id}" class="user-status-text"></div>
-                <span id="preview-${id}">${msgPreview}</span>
-            </div>
-        `;
-
-        if (div) {
-            div.innerHTML = htmlContent;
-            list.insertBefore(div, list.firstChild); 
-        } else {
-            div = document.createElement("div");
-            div.id = `contact-${id}`; 
-            div.className = `user`;
-            div.onclick = (e) => { 
-                if (e.target.tagName !== 'IMG') {
-                    openChat(id, photo, name, isGrp); 
-                }
-            };
-            div.innerHTML = htmlContent;
-            list.prepend(div);
-        }
-
-        if (!isGrp) {
-            const typingRef = db.ref(`typing/${chatId}/${id}`);
-            typingRef.on('value', snap => {
-                const isTyping = snap.exists();
-                const statusEl = document.getElementById(`status-text-${id}`);
-                if(statusEl) {
-                    if (isTyping) {
-                        statusEl.innerText = "Sedang mengetik...";
-                        statusEl.style.color = "var(--accent)";
-                    } else {
-                        statusEl.innerText = "";
-                        if(u?.online) {
-                            statusEl.innerText = "Online";
-                            statusEl.style.color = "var(--online)";
-                        } else if(u?.lastSeen) {
-                            statusEl.innerText = ""; 
-                        }
-                    }
-                }
-            });
-        }
-
-        if (!isGrp) {
-            const userRef = db.ref(`users/${id}`);
-            userRef.on('value', uSnap => {
-                const u = uSnap.val();
-                if(u) globalContacts[id] = u; 
-                const statusEl = document.getElementById(`status-text-${id}`);
-                const dotEl = document.getElementById(`dot-${id}`);
-                
-                if(u) {
-                    if(u.online) {
-                        if(dotEl) dotEl.style.display = "block";
-                        if(statusEl && !statusEl.innerText.includes("mengetik")) {
-                            statusEl.innerText = "Online";
-                            statusEl.style.color = "var(--online)";
-                        }
-                    } else {
-                        if(dotEl) dotEl.style.display = "none";
-                        if(statusEl && !statusEl.innerText.includes("mengetik")) {
-                            statusEl.innerText = "";
-                        }
-                    }
-                }
-            });
-        }
-        
-        if(!isGrp) {
-            checkMyLastMessageStatus(chatId, id);
-        }
-    };
-
-    function updateOnlineDisplay(id, el) {
-        const u = globalContacts[id];
-        if(u && u.online) {
-            el.innerText = "Online";
-            el.style.color = "var(--online)";
-        } else {
-            el.innerText = ""; 
-        }
+    const u = globalContacts[id]; // Ensure contact details are loaded
+    const photo = u?.photo || (isGrp ? 'https://cdn-icons-png.flaticon.com/512/615/615075.png' : 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
+    const name = u?.name || u?.username || id;
+    const msgPreview = info.lastMsg || '...';
+    
+    let timeStr = "";
+    if(info.time) {
+        const d = new Date(info.time);
+        timeStr = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
     }
 
-    if (globalContacts[id]) {
-        processContact();
+    const unreadCount = info.unread || 0;
+    const badgeHtml = unreadCount > 0 ? `<div class="user-badge" id="badge-${id}">${unreadCount}</div>` : "";
+
+    const statusDotHtml = (!isGrp && u?.online) ? `<div class="status-dot" id="dot-${id}" style="display:block"></div>` : "";
+    const tickHtml = (!isGrp) ? `<i id="tick-${id}" class="fas fa-check sidebar-tick"></i>` : "";
+
+    // Pinned Badge
+    const pinnedHtml = info.isPinned ? `<div class="pinned-badge"><i class="fas fa-thumbtack"></i> Pin</div>` : "";
+
+    const htmlContent = `
+        <div class="avatar-wrapper">
+            <img src="${photo}">
+            ${statusDotHtml}
+            ${badgeHtml}
+        </div>
+        <div class="user-info">
+            <div class="user-row-top">
+                <b>${name}</b>
+                <div class="sidebar-meta">
+                    ${tickHtml}
+                    <span class="msg-time">${timeStr}</span>
+                </div>
+            </div>
+            <div class="user-row-bottom">
+                <span id="status-text-${id}" style="font-size:12px; color:#888; height:20px; line-height:20px;"></span>
+                <span id="preview-${id}">${msgPreview}</span>
+            </div>
+        </div>
+    `;
+
+    let div = document.getElementById(`contact-${id}`);
+    if (div) {
+        // Update existing (in case of status change)
+        div.innerHTML = htmlContent;
     } else {
+        // Create new
+        div = document.createElement("div");
+        div.id = `contact-${id}`; 
+        div.className = `user`;
+        div.style.cursor = "pointer";
+        div.onclick = (e) => { 
+            if (e.target.tagName !== 'IMG' && !e.target.closest('.sidebar-meta')) {
+                openChat(id, photo, name, isGrp); 
+            }
+        };
+        
+        // Event Listeners for Menu
+        div.oncontextmenu = (e) => {
+            e.preventDefault();
+            showContactMenu(e, id);
+        };
+        let pressTimer;
+        div.ontouchstart = () => {
+            pressTimer = setTimeout(() => {
+                showContactMenu({ target: div }, id);
+            }, 500);
+        };
+        div.ontouchend = () => clearTimeout(pressTimer);
+
+        div.innerHTML = htmlContent;
+        list.appendChild(div);
+    }
+
+    // Attach listeners for dynamic content updates (typing/online)
+    if (!isGrp) {
+        const typingRef = db.ref(`typing/${chatId}/${id}`);
+        typingRef.on('value', snap => {
+            const isTyping = snap.exists();
+            const statusEl = document.getElementById(`status-text-${id}`);
+            if(statusEl) {
+                if (isTyping) {
+                    statusEl.innerText = "Mengetik...";
+                    statusEl.style.color = "var(--accent)";
+                } else {
+                    statusEl.innerText = "";
+                    if(u?.online) {
+                        statusEl.innerText = "Online";
+                        statusEl.style.color = "var(--online)";
+                    } else if(u?.lastSeen) {
+                        statusEl.innerText = ""; 
+                    }
+                }
+            }
+        });
+    }
+
+    if (!isGrp) {
+        const userRef = db.ref(`users/${id}`);
+        userRef.on('value', uSnap => {
+            const u = uSnap.val();
+            if(u) globalContacts[id] = u; 
+            const statusEl = document.getElementById(`status-text-${id}`);
+            const dotEl = document.getElementById(`dot-${id}`);
+            
+            if(u) {
+                if(u.online) {
+                    if(dotEl) dotEl.style.display = "block";
+                    if(statusEl && !statusEl.innerText.includes("getik")) {
+                        statusEl.innerText = "Online";
+                        statusEl.style.color = "var(--online)";
+                    }
+                } else {
+                    if(dotEl) dotEl.style.display = "none";
+                    if(statusEl && !statusEl.innerText.includes("getik")) {
+                        statusEl.innerText = "";
+                    }
+                }
+            }
+        });
+        
+        checkMyLastMessageStatus(chatId, id);
+    }
+    
+    // Load globalContacts if not present
+    if (!globalContacts[id]) {
         const refPath = isGrp ? "groups/" + id : "users/" + id;
         db.ref(refPath).once("value", uSnap => {
             const u = uSnap.val();
             if(u) globalContacts[id] = u;
-            processContact();
         });
     }
 }
@@ -1594,6 +1614,115 @@ function checkMyLastMessageStatus(chatId, partnerId) {
             }
         }
     });
+}
+
+// --- CONTACT MENU LOGIC ---
+
+function showContactMenu(event, id) {
+    selectedContactId = id;
+    const menu = document.getElementById("contactMenu");
+    
+    // Get target element position
+    let targetEl;
+    if(event.type === "touchstart") {
+        targetEl = event.target.closest('.user'); // For touch
+    } else {
+        targetEl = event.target.closest('.user'); // For click/contextmenu
+    }
+    
+    if(targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        const isMobile = window.innerWidth <= 768;
+
+        let top = rect.top + (rect.height / 2);
+        let left = rect.right + 10;
+
+        // Boundary check to prevent going off screen
+        if (left + menu.offsetWidth > window.innerWidth) {
+            left = rect.left - menu.offsetWidth - 10; // Flip to left
+        }
+        if (top + menu.offsetHeight > window.innerHeight) {
+            top = window.innerHeight - menu.offsetHeight - 20;
+        }
+
+        menu.style.top = top + "px";
+        menu.style.left = left + "px";
+        menu.style.transform = "none";
+        menu.style.display = "block";
+    }
+}
+
+function closeContactMenu() {
+    document.getElementById("contactMenu").style.display = "none";
+}
+
+function togglePinFromMenu() {
+    const id = selectedContactId;
+    if(!id) return;
+
+    // Check current state (we need to fetch current data first to toggle properly)
+    db.ref(`user_chats/${currentUser}/${id}`).once("value").then(snap => {
+        const data = snap.val();
+        if(data) {
+            const newState = !data.isPinned; // Toggle
+            db.ref(`user_chats/${currentUser}/${id}`).update({ isPinned: newState });
+            showToast(newState ? "Dipin" : "Unpin");
+            closeContactMenu();
+        }
+    });
+}
+
+function shareContactProfile() {
+    const id = selectedContactId;
+    if(!id) return;
+    closeContactMenu();
+    
+    // Logic: Forwarding a contact means sending a text message with a profile link
+    // For simplicity in this demo, we send a message "Share Profile"
+    // In a real app, this might generate a deep link.
+    
+    const msg = { 
+        from: currentUser, 
+        text: encryptData(`📱 *Shared Profile*\nUser: ${globalContacts[id]?.username || id}`), 
+        time: Date.now(), 
+        seen: false 
+    };
+    
+    if (currentChatId) {
+        db.ref("chats/" + currentChatId).push(msg).then(() => {
+            updateLastMsg(currentPartnerId, "Profil Dibagikan", Date.now());
+            showToast("Profil dibagikan ke chat ini");
+        });
+    } else {
+        showToast("Buka chat dulu untuk membagikan profil");
+    }
+}
+
+function deleteContactMenu(scope) {
+    const id = selectedContactId;
+    if(!id) return;
+    closeContactMenu();
+
+    if (scope === 'me') {
+        db.ref(`user_chats/${currentUser}/${id}`).remove().then(() => {
+            showToast("Kontak dihapus");
+        });
+    } else if (scope === 'everyone') {
+        // 1. Remove from my list
+        db.ref(`user_chats/${currentUser}/${id}`).remove();
+
+        // 2. Remove from their list (if 1-on-1)
+        const isGrp = id.startsWith("GROUP_");
+        if(!isGrp) {
+            db.ref(`user_chats/${id}/${currentUser}`).remove();
+        }
+
+        // 3. (Optional) Delete Chats completely for both
+        const chatId = isGrp ? id : [currentUser, id].sort().join("_");
+        db.ref(`chats/${chatId}`).remove();
+
+        showToast("Dihapus untuk semua");
+    }
 }
 
 function openChat(pId, photo, name, grp = false) {
@@ -1766,17 +1895,14 @@ function renderMessage(m, key) {
     // Add Touch Listeners for Swipe
     wrap.addEventListener('touchstart', e => {
         touchStartX = e.touches[0].clientX;
-        // If we start a new touch action, close any open menu
-        closeContextMenu();
-        // Also hide reply preview if we swipe a new message (optional, but cleaner)
-        // cancelReply(); 
+        // Close all menus on new touch
+        closeAllMenus();
         wrap.style.transition = 'none';
     }, {passive: true});
 
     wrap.addEventListener('touchmove', e => {
         const touchCurrentX = e.touches[0].clientX;
         const diff = touchCurrentX - touchStartX;
-        // Only allow small horizontal movement to show swipe feedback
         if(Math.abs(diff) < 50) {
             wrap.style.transform = `translateX(${diff}px)`;
             wrap.style.opacity = 1 - Math.abs(diff)/200;
@@ -1791,16 +1917,8 @@ function renderMessage(m, key) {
         wrap.style.transform = 'translateX(0)';
         wrap.style.opacity = 1;
 
-        // Swipe Left (Reply) or Right (Menu/Reply)
+        // Swipe Left or Right -> Trigger Reply
         if (Math.abs(diff) > 50) {
-            // If swipe detected, act as direct Reply
-            // Clear selection to ensure clean state as requested ("fitur pilihannya hilang")
-            selectedMsgId = null;
-            selectedMsgData = null;
-            
-            // Close menu just in case
-            closeContextMenu();
-            
             handleReply(); 
         }
     });
@@ -1922,7 +2040,6 @@ function showContextMenu(key, data) {
     
     const menu = document.getElementById("msgMenu");
     
-    // Logic for "Delete for Everyone"
     const isMe = data.from === currentUser;
     const timeDiff = Date.now() - data.time;
     const canDeleteForEveryone = isMe && timeDiff < 86400000; // 24 hours
@@ -1934,27 +2051,18 @@ function showContextMenu(key, data) {
         const rect = targetEl.getBoundingClientRect();
         const isMobile = window.innerWidth <= 768;
         
-        // Basic positioning variables
         let top = rect.top + (rect.height / 2) - (menu.offsetHeight / 2);
         let left;
         
         if (isMobile) {
-            // Mobile Logic: Attached to side of message
             if (data.from === currentUser) { 
-                // My message (Right side) -> Menu on Left
                 left = rect.left - menu.offsetWidth - 10;
             } else { 
-                // Friend message (Left side) -> Menu on Right
                 left = rect.right + 10;
             }
-            
-            // Boundary checks to prevent going off screen
-            if (left < 10) left = 10; // Left edge check
-            if (left + menu.offsetWidth > window.innerWidth) {
-                left = window.innerWidth - menu.offsetWidth - 10; // Right edge check
-            }
+            if (left < 10) left = 10; 
+            if (left + menu.offsetWidth > window.innerWidth) left = window.innerWidth - menu.offsetWidth - 10;
         } else {
-            // Desktop Fallback (Standard centering)
             left = "50%";
             top = "50%";
             menu.style.transform = "translate(-50%, -50%)";
@@ -1962,7 +2070,6 @@ function showContextMenu(key, data) {
             menu.style.top = top;
         }
         
-        // Apply positioning (reset transform for mobile)
         if (isMobile) {
             menu.style.transform = 'none';
             menu.style.left = left + 'px';
@@ -1972,13 +2079,17 @@ function showContextMenu(key, data) {
         menu.style.display = "block";
     }
 
-    // Rebuild menu content dynamically if needed
     const delEveryoneBtn = document.getElementById("btnDeleteEveryone");
     if(delEveryoneBtn) delEveryoneBtn.style.display = canDeleteForEveryone ? "block" : "none";
 }
 
 function closeContextMenu() {
     document.getElementById("msgMenu").style.display = 'none';
+}
+
+function closeAllMenus() {
+    closeContextMenu();
+    closeContactMenu();
 }
 
 function handleReply() {
@@ -2065,7 +2176,7 @@ function executeForward(targetId, targetName) {
         text: finalText,
         time: Date.now(),
         seen: false,
-        forwarded: true
+        forwarded: true 
     };
 
     db.ref("chats/" + targetChatId).push(pushData).then(() => {
@@ -2127,7 +2238,7 @@ function handleDelete() {
     const sheet = document.getElementById("deleteSheet");
     const btnDelEveryone = document.getElementById("btnDeleteEveryone");
     
-    btnDelEveryone.style.display = canDeleteEveryone ? "block" : "none";
+    btnDelEveryone.style.display = canDeleteForEveryone ? "block" : "none";
     sheet.style.display = "flex";
 }
 
@@ -2156,15 +2267,21 @@ function confirmDeleteMe() {
     showToast("Dihapus untuk Anda");
 }
 
-/* --- GLOBAL CLICK HANDLER (Auto Close Menu) --- */
+/* --- GLOBAL CLICK HANDLER (Auto Close Menus) --- */
 window.addEventListener('click', (e) => {
-    const menu = document.getElementById("msgMenu");
+    const msgMenu = document.getElementById("msgMenu");
+    const contactMenu = document.getElementById("contactMenu");
     const overlay = document.getElementById("menuOverlay");
     
-    // If menu is open, and we click somewhere NOT in the menu
-    if(menu.style.display === 'block') {
+    if(msgMenu.style.display === 'block') {
         if (!e.target.closest('#msgMenu')) {
             closeContextMenu();
+        }
+    }
+    
+    if(contactMenu.style.display === 'block') {
+        if (!e.target.closest('#contactMenu')) {
+            closeContactMenu();
         }
     }
 });
